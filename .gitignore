@@ -1,0 +1,10 @@
+env/
+**/env/
+*.sqlite3
+.idea/
+**/__pycache__/
+__pycache__/
+**/.idea/
+.env
+**/.env
+enviroments/

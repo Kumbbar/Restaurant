@@ -1,0 +1,22 @@
+version: "3.7"
+
+
+services:
+  nginx:
+    build: ./nginx
+    container_name: 'nginx'
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - chat
+  chat:
+    build: ./chat
+    container_name: 'chat'
+    env_file:
+      - chat/.env
+    command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - redis
+    ports:
+      - '8000:8000'
