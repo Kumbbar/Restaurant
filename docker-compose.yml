@@ -2,17 +2,20 @@ version: "3.7"
 
 
 services:
-  nginx:
-    build: ./nginx
-    container_name: 'nginx'
-    restart: always
+  auth-service-db:
+    container_name: 'auth-service-db'
+    image: postgres
+    volumes:
+      - ./data/authentication_db:/var/lib/postgresql/data
     ports:
-      - "80:80"
-    depends_on:
-      - chat
-  chat:
+      - "9008:5432"
+    environment:
+      - POSTGRES_DB=auth
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=12345
+  auth-service:
     build: ./chat
-    container_name: 'chat'
+    container_name: 'auth-service'
     env_file:
       - chat/.env
     command: python manage.py runserver 0.0.0.0:8000

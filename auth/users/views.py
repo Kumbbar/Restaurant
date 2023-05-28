@@ -7,9 +7,9 @@ from rest_framework.generics import CreateAPIView, DestroyAPIView
 
 from .models import User
 from .permissions import UserOwnerPermission
-from .serializers import RegisterUserSerializer, UserDeleteOutputSerializer
+from .serializers import RegisterUserSerializer
 from .services.tokens import get_or_create_token
-from .services.selectors.users import get_all_users
+from .services.selectors.users import get_user_by_id
 
 
 class UserLoginAPI(ObtainAuthToken):
@@ -50,8 +50,9 @@ class UserRegisterAPI(CreateAPIView):
     
 class UserDeleteAPI(DestroyAPIView):
     permission_classes = (IsAdminUser | UserOwnerPermission, )
-    queryset = get_all_users()
     model = User
-    serializer_class = UserDeleteOutputSerializer
-    
+
+    def get_queryset(self):
+        queryset = get_user_by_id(self.kwargs.get('pk'))
+        return queryset
 
