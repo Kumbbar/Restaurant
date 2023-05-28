@@ -3,12 +3,13 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import CreateAPIView, DestroyAPIView
+from rest_framework.generics import CreateAPIView, DestroyAPIView, UpdateAPIView
 
 from .models import User
 from .permissions import UserOwnerPermission
-from .serializers import RegisterUserSerializer
+from .serializers import RegisterUserSerializer, ResetPasswordSerializer
 from .services.tokens import get_or_create_token
+from .services.users import reset_user_password
 from .services.selectors.users import get_user_by_id
 
 
@@ -56,3 +57,24 @@ class UserDeleteAPI(DestroyAPIView):
         queryset = get_user_by_id(self.kwargs.get('pk'))
         return queryset
 
+
+class UserResetPasswordAPI(UpdateAPIView):
+    serializer_class = ResetPasswordSerializer
+    model = User
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            result = reset_user_password(
+                self.object,
+                serializer.data.get("old_password"),
+                serializer.data.get("new_password")
+            )
+            return result
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

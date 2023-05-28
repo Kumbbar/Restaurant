@@ -46,3 +46,17 @@ class UserDeleteOutputSerializer(serializers.ModelSerializer):
     fields = ('username', 'first_name', 'last_name', 'email', 'date_joined', 'password')
 
 
+class ResetPasswordSerializer(serializers.Serializer):
+    model = User
+
+    """
+    Serializer for password change endpoint.
+    """
+    password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+    @staticmethod
+    def validate_new_password(password):
+        validators.validate_password(password)
+        return password
+
