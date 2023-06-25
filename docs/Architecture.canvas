@@ -1,0 +1,22 @@
+{
+	"nodes":[
+		{"type":"file","file":"restaurant/Auth service.md","id":"2412e23616909f7b","x":-360,"y":-320,"width":400,"height":400,"color":"4"},
+		{"type":"text","text":"Auth service DB","id":"8ac7071adceb883b","x":-760,"y":-150,"width":250,"height":60,"color":"3"},
+		{"type":"text","text":"Request","id":"cd9e71e1214701e6","x":1760,"y":-150,"width":250,"height":60,"color":"5"},
+		{"type":"file","file":"restaurant/Service.md","id":"d5de3f303ae18a43","x":520,"y":-720,"width":400,"height":400,"color":"6"},
+		{"type":"text","text":"Service DB","id":"bd774d939ba1c4d9","x":595,"y":-920,"width":250,"height":60,"color":"3"},
+		{"type":"file","file":"restaurant/django-icon-svgrepo-com.svg","id":"e2f39ff7c8a6e811","x":-40,"y":-320,"width":80,"height":80,"color":"4"},
+		{"id":"cd18e767b1fd1bff","x":-570,"y":-150,"width":60,"height":60,"color":"3","type":"file","file":"postgresql-svgrepo-com.svg"},
+		{"type":"file","file":"postgresql-svgrepo-com.svg","id":"e5c58e1cc0191d2d","x":785,"y":-920,"width":60,"height":60,"color":"3"}
+	],
+	"edges":[
+		{"id":"7726ead06583435e","fromNode":"cd9e71e1214701e6","fromSide":"top","toNode":"d5de3f303ae18a43","toSide":"right"},
+		{"id":"13ad35b85e18684c","fromNode":"d5de3f303ae18a43","fromSide":"left","toNode":"2412e23616909f7b","toSide":"top"},
+		{"id":"46921e7cfabd9430","fromNode":"2412e23616909f7b","fromSide":"top","toNode":"d5de3f303ae18a43","toSide":"left","color":"5"},
+		{"id":"bef4b2aaf407e269","fromNode":"d5de3f303ae18a43","fromSide":"right","toNode":"cd9e71e1214701e6","toSide":"top","color":"5"},
+		{"id":"1a9180ef406fc4ef","fromNode":"d5de3f303ae18a43","fromSide":"top","toNode":"bd774d939ba1c4d9","toSide":"bottom"},
+		{"id":"fb093db1abaa4a78","fromNode":"bd774d939ba1c4d9","fromSide":"bottom","toNode":"d5de3f303ae18a43","toSide":"top","color":"6"},
+		{"id":"a7fb9a031eaac0ac","fromNode":"8ac7071adceb883b","fromSide":"right","toNode":"2412e23616909f7b","toSide":"left"},
+		{"id":"54b407fd9e31d53d","fromNode":"2412e23616909f7b","fromSide":"left","toNode":"8ac7071adceb883b","toSide":"right","color":"4"}
+	]
+}

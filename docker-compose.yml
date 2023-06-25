@@ -4,22 +4,26 @@ version: "3.7"
 services:
   auth-service-db:
     container_name: 'auth-service-db'
-    image: postgres
+    image: postgres:latest
     volumes:
-      - ./data/authentication_db:/var/lib/postgresql/data
+      - authentication_db:/data/postgres
     ports:
       - "9008:5432"
     environment:
       - POSTGRES_DB=auth
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=12345
+      - PGDATA=/data/postgres
+
   auth-service:
-    build: ./chat
+    build: ./auth
     container_name: 'auth-service'
     env_file:
-      - chat/.env
+      - auth/.env
     command: python manage.py runserver 0.0.0.0:8000
-    depends_on:
-      - redis
     ports:
       - '8000:8000'
+
+
+volumes:
+  authentication_db:
