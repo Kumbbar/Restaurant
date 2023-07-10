@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, Is
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView, DestroyAPIView, UpdateAPIView
@@ -18,18 +18,20 @@ class UserLoginAPI(ObtainAuthToken):
 
     def post(self, request, *args, **kwargs):
 
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
+        serializer = self.serializer_class(
+            data=request.data,
+            context={'request': request}
+        )
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
 
         token, created = get_or_create_token(user)
-
         output_data = {
             'token': token.key,
             'id': user.pk,
             'email': user.email
         }
+
         return Response(output_data, status=status.HTTP_200_OK)
 
 
@@ -63,6 +65,10 @@ class UserResetPasswordAPI(UpdateAPIView):
     model = User
     permission_classes = (IsAuthenticated,)
 
+    def __init__(self, **kwargs):
+        super().__init__(kwargs)
+        self.object = None
+
     def get_object(self, queryset=None):
         obj = self.request.user
         return obj
@@ -78,3 +84,14 @@ class UserResetPasswordAPI(UpdateAPIView):
             )
             return result
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class IsAuthenticatedView(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request):
+        response_data = {
+            'is_superuser': request.user.is_superuser,
+            'permissions': request.user.get_all_permissions()
+        }
+        return Response(response_data, status=status.HTTP_200_OK)

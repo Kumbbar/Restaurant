@@ -4,9 +4,9 @@ version: "3.7"
 services:
   auth-service-db:
     container_name: 'auth-service-db'
-    image: postgres:latest
+    image: postgres
     volumes:
-      - authentication_db:/data/postgres
+      - ./data/authentication_db:/data/postgres
     ports:
       - "9008:5432"
     environment:
@@ -20,9 +20,33 @@ services:
     container_name: 'auth-service'
     env_file:
       - auth/.env
-    command: python manage.py runserver 0.0.0.0:8000
+    command: uwsgi --http :8000 --module auth.wsgi
     ports:
       - '8000:8000'
+
+  krakend:
+    build: ./krakend/gateway
+    container_name: krakend
+    restart: always
+    expose:
+      - 8080
+    depends_on:
+      - authentication_flask
+      - authentication_nginx
+    links:
+      - authentication_nginx
+      - cashflow_nginx
+      - dealsncustomers_nginx
+      - designing_nginx
+
+  krakend_nginx:
+    build: ./krakend/nginx
+    container_name: krakend_nginx
+    restart: always
+    depends_on:
+      - krakend
+    ports:
+      - "80:80"
 
 
 volumes:

@@ -1,0 +1,340 @@
+{
+  "version": 3,
+  "timeout": "20000ms",
+  "endpoints": [
+    {
+      "endpoint": "/api/auth/refresh",
+      "output_encoding": "json",
+      "method": "POST",
+      "input_headers": [
+        "*"
+      ],
+      "backend": [
+        {
+          "host": [
+            "http://authentication_nginx"
+          ],
+          "method": "POST",
+          "encoding": "json",
+          "url_pattern": "/refresh?account={JWT.account}&user_id={JWT.user_id}&role={JWT.role}"
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "roles_key": "statuses",
+          "roles": [
+            "Refresh"
+          ],
+          "jwk_url": "http://authentication_nginx/jwk",
+          "disable_jwk_security": true
+        }
+      }
+    },
+    {
+      "endpoint": "/api/auth/refresh_sign",
+      "output_encoding": "json",
+      "method": "POST",
+      "input_headers": [
+        "*"
+      ],
+      "backend": [
+        {
+          "host": [
+            "http://authentication_nginx"
+          ],
+          "method": "POST",
+          "encoding": "json",
+          "url_pattern": "/refresh_sign"
+        }
+      ],
+      "extra_config": {
+        "auth/signer": {
+          "alg": "HS256",
+          "kid": "63cbab39-b6d2-422b-8634-ae9f561473fa",
+          "keys_to_sign": [
+            "access_token",
+            "refresh_token"
+          ],
+          "jwk_url": "http://authentication_nginx/jwk",
+          "disable_jwk_security": true
+        }
+      }
+    },
+    {
+      "endpoint": "/api/auth/login",
+      "output_encoding": "json",
+      "method": "POST",
+      "input_headers": [
+        "*"
+      ],
+      "backend": [
+        {
+          "host": [
+            "http://authentication_nginx"
+          ],
+          "method": "POST",
+          "encoding": "json",
+          "url_pattern": "/login"
+        }
+      ],
+      "extra_config": {
+        "auth/signer": {
+          "alg": "HS256",
+          "kid": "63cbab39-b6d2-422b-8634-ae9f561473fa",
+          "keys_to_sign": [
+            "access_token",
+            "refresh_token"
+          ],
+          "jwk_url": "http://authentication_nginx/jwk",
+          "disable_jwk_security": true
+        }
+      }
+    },
+    {
+      "endpoint": "/api/auth/register",
+      "output_encoding": "no-op",
+      "method": "POST",
+      "input_headers": [
+        "*"
+      ],
+      "backend": [
+        {
+          "host": [
+            "http://authentication_nginx"
+          ],
+          "method": "POST",
+          "encoding": "no-op",
+          "url_pattern": "/register"
+        }
+      ],
+      "extra_config": {
+        "auth/signer": {
+          "alg": "HS256",
+          "kid": "63cbab39-b6d2-422b-8634-ae9f561473fa",
+          "keys_to_sign": [
+            "access_token",
+            "refresh_token"
+          ],
+          "jwk_url": "http://authentication_nginx/jwk",
+          "disable_jwk_security": true
+        }
+      }
+    },
+    {
+      "endpoint": "/api/auth/register_user",
+      "output_encoding": "no-op",
+      "method": "POST",
+      "input_headers": [
+        "*"
+      ],
+      "backend": [
+        {
+          "host": [
+            "http://authentication_nginx"
+          ],
+          "method": "POST",
+          "encoding": "no-op",
+          "url_pattern": "/register_user?account={JWT.account}&user_id={JWT.user_id}&role={JWT.role}"
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "roles_key": "statuses",
+          "roles": [
+            "Owner", "User"
+          ],
+          "jwk_url": "http://authentication_nginx/jwk",
+          "disable_jwk_security": true
+        }
+      }
+    },
+    {
+      "endpoint": "/api/auth/{action}",
+      "output_encoding": "no-op",
+      "method": "POST",
+      "input_headers": [
+        "*"
+      ],
+      "backend": [
+        {
+          "host": [
+            "http://authentication_nginx"
+          ],
+          "method": "POST",
+          "encoding": "no-op",
+          "url_pattern": "/{action}?account={JWT.account}&user_id={JWT.user_id}&role={JWT.role}"
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "roles_key": "statuses",
+          "roles": [
+            "Owner", "User"
+          ],
+          "jwk_url": "http://authentication_nginx/jwk",
+          "disable_jwk_security": true
+        }
+      }
+    },
+    {
+      "endpoint": "/api/cash/{action}",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
+      "backend": [
+        {
+          "host": [
+            "http://cashflow_nginx"
+          ],
+          "method": "POST",
+          "url_pattern": "/{action}?account={JWT.account}&user_id={JWT.user_id}&role={JWT.role}",
+          "encoding": "no-op",
+          "extra_config": {}
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "roles_key": "statuses",
+          "roles": [
+            "Owner","User"
+          ],
+          "jwk_url": "http://authentication_nginx/jwk",
+          "disable_jwk_security": true
+        }
+      }
+    },
+    {
+      "endpoint": "/api/deal/{action}",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
+      "backend": [
+        {
+          "host": [
+            "http://dealsncustomers_nginx"
+          ],
+          "method": "POST",
+          "url_pattern": "/{action}?account={JWT.account}&user_id={JWT.user_id}&role={JWT.role}",
+          "encoding": "no-op"
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "roles_key": "statuses",
+          "roles": [
+            "Owner","User"
+          ],
+          "jwk_url": "http://authentication_nginx/jwk",
+          "disable_jwk_security": true
+        }
+      }
+    },
+    {
+      "endpoint": "/api/design/{action}",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
+      "backend": [
+        {
+          "host": [
+            "http://designing_nginx"
+          ],
+          "method": "POST",
+          "url_pattern": "/{action}?account={JWT.account}&user_id={JWT.user_id}&role={JWT.role}",
+          "encoding": "no-op"
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "roles_key": "statuses",
+          "roles": [
+            "Owner", "User"
+          ],
+          "jwk_url": "http://authentication_nginx/jwk",
+          "disable_jwk_security": true
+        }
+      }
+    },
+    {
+      "endpoint": "/api/design/upload/{id}",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
+      "backend": [
+        {
+          "host": [
+            "http://designing_nginx"
+          ],
+          "method": "POST",
+          "url_pattern": "/upload/{id}?account={JWT.account}&user_id={JWT.user_id}&role={JWT.role}",
+          "encoding": "no-op"
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "roles_key": "statuses",
+          "roles": [
+            "Owner", "User"
+          ],
+          "jwk_url": "http://authentication_nginx/jwk",
+          "disable_jwk_security": true
+        }
+      }
+    },
+    {
+      "endpoint": "/api/tg-bot/{action}",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
+      "backend": [
+        {
+          "host": [
+            "http://tg_bot_nginx"
+          ],
+          "method": "POST",
+          "url_pattern": "/{action}",
+          "encoding": "no-op"
+        }
+      ]
+    }
+  ],
+  "extra_config": {
+    "security/cors": {
+      "allow_origins": [
+        "https://serp.stabilis72.ru"
+      ],
+      "allow_methods": [
+        "GET",
+        "HEAD",
+        "POST"
+      ],
+      "expose_headers": [
+        "Content-Length",
+        "Content-Type"
+      ],
+      "max_age": "12h",
+      "allow_headers": [
+        "*"
+      ],
+      "allow_credentials": false,
+      "debug": true
+    }
+  }
+}
