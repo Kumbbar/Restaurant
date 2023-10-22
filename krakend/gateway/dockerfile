@@ -1,5 +1,0 @@
-FROM krakend
-USER root
-COPY krakend.json /etc/krakend/
-
-CMD ["run","-c","/etc/krakend/krakend.json","-d"]

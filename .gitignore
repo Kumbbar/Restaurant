@@ -7,5 +7,5 @@ _trial_temp/
 __pycache__/
 **/.idea/
 .env
-**/.env
+.env
 enviroments/

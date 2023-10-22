@@ -88,6 +88,7 @@ class IsAuthenticatedView(APIView):
     def get(self, request):
         response_data = {
             'is_superuser': request.user.is_superuser,
+            'is_staff': request.user.is_staff,
             'permissions': request.user.get_all_permissions()
         }
         return Response(response_data, status=status.HTTP_200_OK)

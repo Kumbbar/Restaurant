@@ -1,4 +1,4 @@
-"""restaurant URL Configuration
+"""restaurants URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.1/topics/http/urls/
@@ -13,11 +13,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.contrib import admin
 from django.urls import path, include
 
 
 urlpatterns = [
-    path('auth/', include('users.urls')),
-    path('admin/', include('users.admin_urls')),
-    path('login/', include('rest_framework.urls'))
+    path('auth/', include('apps.users.urls')),
+    path('admin/', include('apps.users.admin_urls')),
+    path('login/', include('rest_framework.urls')),
+    path('admin_panel/', admin.site.urls)
 ]

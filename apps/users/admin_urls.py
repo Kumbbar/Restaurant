@@ -10,7 +10,6 @@ urlpatterns = [
     path('', include(router.urls)),
     path(
         'users/<int:pk>/reset_password',
-        admin_views.AdminResetUserPasswordApiView.as_view(),
-        name='admin_reset_user_password'
+        admin_views.AdminResetUserPasswordApiView.as_view(), name='admin_reset_user_password'
     )
 ]

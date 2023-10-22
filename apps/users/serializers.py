@@ -87,6 +87,7 @@ class AdminResetPasswordSerializer(serializers.Serializer):
 
 
 # Admin serializers
+
 class UsersRUDListSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=150, required=False)
 
