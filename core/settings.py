@@ -115,9 +115,7 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-if DEBUG:
-    TEMPLATES = [
+TEMPLATES = [
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
             'DIRS': [],
@@ -133,6 +131,7 @@ if DEBUG:
         },
     ]
 
+if DEBUG:
     # Static files (CSS, JavaScript, Images)
     # https://docs.djangoproject.com/en/3.2/howto/static-files/
 

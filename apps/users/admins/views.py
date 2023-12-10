@@ -4,19 +4,18 @@ from rest_framework.serializers import Serializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
-from .models import User
-from .serializers import (
+from apps.users.models import User
+from apps.users.admins.serializers import (
     AdminCreateUserSerializer,
     UsersRUDListSerializer, AdminResetPasswordSerializer
 )
-from .services.selectors.users import get_all_users, get_user_by_id
-from .base_views import ResetUserPasswordApiView
+from apps.users.services.selectors.users import get_all_users, get_user_by_id
+from apps.users.abc_views import ResetUserPasswordApiView
 
 
 class UserViewSet(ModelViewSet):
     permission_classes = (IsAuthenticated, IsAdminUser,)
     queryset = get_all_users()
-    serializer_class = UsersRUDListSerializer
 
     def get_serializer_class(self):
         if self.action == 'create':

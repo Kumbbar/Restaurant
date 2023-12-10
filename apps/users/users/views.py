@@ -4,18 +4,16 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
-from rest_framework.generics import CreateAPIView, DestroyAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView, DestroyAPIView
 
-from .models import User
-from .permissions import UserOwnerPermission
-from .serializers import (
-    RegisterUserSerializer,
-    ResetPasswordSerializer,
+from apps.users.models import User
+from apps.users.permissions import UserOwnerPermission
+from apps.users.users.serializers import (
+    RegisterUserSerializer
 )
-from .services.tokens import get_or_create_token
-from .services.users import reset_user_password
-from .services.selectors.users import get_user_by_id
-from .base_views import ResetUserPasswordApiView
+from apps.users.services.tokens import get_or_create_token
+from apps.users.services.selectors.users import get_user_by_id
+from apps.users.abc_views import ResetUserPasswordApiView
 
 
 # User permission views

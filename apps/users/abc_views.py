@@ -10,7 +10,6 @@ from .models import User
 from .serializers import (
     ResetPasswordSerializer
 )
-from .services.users import reset_user_password
 
 
 class ResetUserPasswordApiView(ABC, UpdateAPIView):
