@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.generics import UpdateAPIView
 from rest_framework.serializers import Serializer
@@ -39,3 +39,13 @@ class ResetUserPasswordApiView(ABC, UpdateAPIView):
             )
             return result
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PublicApiView:
+    authentication_classes = ()
+    permission_classes = (AllowAny, )
+
+
+class AdminApiView:
+    permission_classes = (IsAuthenticated, IsAdminUser)
+

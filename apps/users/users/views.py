@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
@@ -13,54 +13,43 @@ from apps.users.users.serializers import (
 )
 from apps.users.services.tokens import get_or_create_token
 from apps.users.services.selectors.users import get_user_by_id
-from apps.users.abc_views import ResetUserPasswordApiView
+from apps.users.abc_views import ResetUserPasswordApiView, PublicApiView
 
 
-# User permission views
+class UserRegisterAPI(PublicApiView, CreateAPIView):
+    model = User
+    serializer_class = RegisterUserSerializer
 
-class UserLoginAPI(ObtainAuthToken):
-    permission_classes = (AllowAny, )
 
+class UserLoginAPI(PublicApiView, ObtainAuthToken):
     def post(self, request, *args, **kwargs):
-
         serializer = self.serializer_class(
             data=request.data,
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-
         token, created = get_or_create_token(user)
         output_data = {
             'token': token.key,
-            'id': user.pk,
-            'email': user.email
+            'id': user.pk
         }
-
         return Response(output_data, status=status.HTTP_200_OK)
 
 
 class UserLogoutAPI(APIView):
-    permission_classes = (IsAuthenticated, )
-
     def post(self, request):
         request.user.auth_token.delete()
         return Response(status=status.HTTP_200_OK)
 
 
-class UserRegisterAPI(CreateAPIView):
-    model = User
-    permission_classes = (AllowAny, )
-    serializer_class = RegisterUserSerializer
-    
-    
 class UserSelfDeleteAPI(DestroyAPIView):
     permission_classes = (IsAuthenticated, UserOwnerPermission, )
     model = User
 
-    def get_queryset(self):
-        queryset = get_user_by_id(self.request.user.id)
-        return queryset
+    def get_object(self):
+        object = get_user_by_id(self.request.user.id)
+        return object
 
 
 class UserResetPasswordAPI(ResetUserPasswordApiView):
@@ -69,7 +58,7 @@ class UserResetPasswordAPI(ResetUserPasswordApiView):
         return obj
 
     def reset_password(self, user: User, serializer: Serializer):
-        if not user.check_password(serializer.data.get("old_password"),):
+        if not user.check_password(serializer.data.get("password"),):
             return Response({"password": ["Wrong password"]}, status=status.HTTP_400_BAD_REQUEST)
         user.set_password(serializer.data.get("new_password"))
         user.save()
@@ -78,15 +67,20 @@ class UserResetPasswordAPI(ResetUserPasswordApiView):
 
 class IsAuthenticatedView(APIView):
     """
-    View for microservices auth check.
     User permissions for services.
     """
-    permission_classes = (IsAuthenticated, )
+    attrs = (
+        'id',
+        'first_name',
+        'last_name',
+        'email',
+        'username',
+        'is_superuser',
+        'is_staff',
+        'is_superuser',
+    )
 
     def get(self, request):
-        response_data = {
-            'is_superuser': request.user.is_superuser,
-            'is_staff': request.user.is_staff,
-            'permissions': request.user.get_all_permissions()
-        }
+        response_data = {attr: getattr(request.user, attr) for attr in self.__class__.attrs}
+        response_data['permissions'] = request.user.get_user_permissions()
         return Response(response_data, status=status.HTTP_200_OK)

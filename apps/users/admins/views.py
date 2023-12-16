@@ -2,7 +2,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 from apps.users.models import User
 from apps.users.admins.serializers import (
@@ -10,11 +9,10 @@ from apps.users.admins.serializers import (
     UsersRUDListSerializer, AdminResetPasswordSerializer
 )
 from apps.users.services.selectors.users import get_all_users, get_user_by_id
-from apps.users.abc_views import ResetUserPasswordApiView
+from apps.users.abc_views import ResetUserPasswordApiView, AdminApiView
 
 
-class UserViewSet(ModelViewSet):
-    permission_classes = (IsAuthenticated, IsAdminUser,)
+class UserViewSet(AdminApiView, ModelViewSet):
     queryset = get_all_users()
 
     def get_serializer_class(self):
@@ -24,8 +22,7 @@ class UserViewSet(ModelViewSet):
             return UsersRUDListSerializer
 
 
-class AdminResetUserPasswordApiView(ResetUserPasswordApiView):
-    permission_classes = (IsAuthenticated, IsAdminUser,)
+class AdminResetUserPasswordApiView(AdminApiView, ResetUserPasswordApiView):
     serializer_class = AdminResetPasswordSerializer
 
     def get_object(self, queryset=None, *args, **kwargs):
