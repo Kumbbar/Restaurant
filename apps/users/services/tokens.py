@@ -1,5 +1,6 @@
-from ..models import User
 from rest_framework.authtoken.models import Token
+
+from ..models import User
 
 
 def get_or_create_token(user: User):

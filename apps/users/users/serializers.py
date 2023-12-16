@@ -1,8 +1,4 @@
-from django.contrib.auth.validators import UnicodeUsernameValidator
-import django.contrib.auth.password_validation as validators
-
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
 from ..models import User
 from ..services.tokens import create_token

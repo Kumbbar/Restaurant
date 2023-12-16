@@ -1,15 +1,17 @@
+from django.contrib.auth.models import Permission
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from rest_framework.viewsets import ModelViewSet
 
-from apps.users.models import User
-from apps.users.admins.serializers import (
+from ..models import User
+from .serializers import (
     AdminCreateUserSerializer,
     UsersRUDListSerializer, AdminResetPasswordSerializer
 )
-from apps.users.services.selectors.users import get_all_users, get_user_by_id
-from apps.users.abc_views import ResetUserPasswordApiView, AdminApiView
+from ..services.selectors.users import get_all_users, get_user_by_id
+from ..abc_views import ResetUserPasswordApiView, AdminApiView
 
 
 class UserViewSet(AdminApiView, ModelViewSet):
@@ -33,3 +35,5 @@ class AdminResetUserPasswordApiView(AdminApiView, ResetUserPasswordApiView):
         user.set_password(serializer.data.get("new_password"))
         user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+

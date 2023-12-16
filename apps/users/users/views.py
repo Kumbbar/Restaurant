@@ -6,14 +6,14 @@ from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView, DestroyAPIView
 
-from apps.users.models import User
-from apps.users.permissions import UserOwnerPermission
-from apps.users.users.serializers import (
+from ..models import User
+from ..permissions import UserOwnerPermission
+from .serializers import (
     RegisterUserSerializer
 )
-from apps.users.services.tokens import get_or_create_token
-from apps.users.services.selectors.users import get_user_by_id
-from apps.users.abc_views import ResetUserPasswordApiView, PublicApiView
+from ..services.tokens import get_or_create_token
+from ..services.selectors.users import get_user_by_id
+from ..abc_views import ResetUserPasswordApiView, PublicApiView
 
 
 class UserRegisterAPI(PublicApiView, CreateAPIView):
