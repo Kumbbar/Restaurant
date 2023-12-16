@@ -1,45 +1,21 @@
-from typing import Callable
-
-from django.contrib.auth.validators import UnicodeUsernameValidator
-
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
 from .models import User
-from .services.users import create_user
-from .services.selectors.users import get_all_users
-from .services.passwords import validate_password
+from core.services.tokens import create_token
+from core.serializers.users import CreateUserSerializer
 
 
-class ResetPasswordSerializer(serializers.Serializer):
-    """
-    Serializer for password change
-    """
-    model = User
-    password = serializers.CharField(required=True)
-    new_password = serializers.CharField(required=True)
-
-    validate_new_password: Callable = staticmethod(validate_password)
-
-
-class CreateUserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        min_length=6,
-        max_length=150,
-        validators=[
-            UniqueValidator(get_all_users()),
-            UnicodeUsernameValidator
-        ]
-    )
-    date_joined = serializers.DateTimeField(read_only=True)
-    password = serializers.CharField(write_only=True)
-
-    validate_password = staticmethod(validate_password)
+class RegisterUserSerializer(CreateUserSerializer):
+    token = serializers.SerializerMethodField(read_only=True)
 
     def create(self, validated_data):
-        user = create_user(**validated_data)
+        user = super().create(validated_data)
+        self.token = create_token(user=user)
         return user
+
+    def get_token(self, obj):
+        return self.token.key
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'date_joined', 'password')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'token', 'date_joined', 'password')

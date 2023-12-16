@@ -1,6 +1,6 @@
 from django.db.models import QuerySet
 
-from ...models import User
+from ... import User
 
 
 def get_all_users() -> QuerySet[User]:

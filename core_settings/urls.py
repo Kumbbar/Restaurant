@@ -5,11 +5,12 @@ from .settings import DEBUG
 
 
 urlpatterns = [
-    path('auth/', include('apps.users.urls'))
+    path('auth/', include('apps.users.urls')),
+    path('admin/', include('apps.admins.urls'))
 ]
 
 debug_urls = (
-    path('login/', include('rest_framework.urls')),
+    path('docs/', include('rest_framework.urls')),
     path('admin_panel/', admin.site.urls)
 )
 

@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.generics import UpdateAPIView
 from rest_framework.serializers import Serializer
 
-from .models import User
-from .serializers import (
+from .. import User
+from core.serializers.users import (
     ResetPasswordSerializer
 )
 
@@ -40,12 +40,4 @@ class ResetUserPasswordApiView(ABC, UpdateAPIView):
             return result
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-class PublicApiView:
-    authentication_classes = ()
-    permission_classes = (AllowAny, )
-
-
-class AdminApiView:
-    permission_classes = (IsAuthenticated, IsAdminUser)
 
