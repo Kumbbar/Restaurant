@@ -8,6 +8,7 @@ from . import views
 router = routers.SimpleRouter()
 router.register('users', views.UserViewSet)
 router.register('permissions', views.PermissionViewSet)
+router.register('groups', views.GroupViewSet)
 router.register('content_types', views.ContentTypeViewSet)
 
 urlpatterns = [

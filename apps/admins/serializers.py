@@ -1,6 +1,6 @@
 from typing import Callable
 
-from django.contrib.auth.models import Permission, ContentType
+from django.contrib.auth.models import Permission, ContentType, Group
 
 from rest_framework import serializers
 
@@ -40,6 +40,7 @@ class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
         fields = (
+            'id',
             'name',
             'content_type',
             'codename'
@@ -50,6 +51,16 @@ class ContentTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContentType
         fields = (
+            'id',
             'app_label',
             'model'
+        )
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = (
+            'id',
+            'name'
         )
