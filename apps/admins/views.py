@@ -1,8 +1,8 @@
 from django.contrib.auth.models import Group
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
-from rest_framework.views import APIView
 
 from .serializers import (
     UsersRUDListSerializer,
@@ -14,6 +14,7 @@ from .serializers import (
 from .services.selectors.permissions import get_all_permissions
 from .services.selectors.content_types import get_all_content_types
 from .services.selectors.groups import get_all_groups
+from .services.views import ManyToManyApiView
 from apps.users.models import User
 
 from core.services.selectors.users import get_all_users, get_user_by_id
@@ -74,13 +75,19 @@ class ForceResetUserPasswordApiView(AdminApiView, ResetUserPasswordApiView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class TestApi(APIView):
-    model_main_id_field = 'pk'
-    model_optional_id_field = 'pk'
-    model = None
+class ChangeGroupPermissionsApiView(AdminApiView, ManyToManyApiView):
+    changeable_model = Group
+    serializer = PermissionSerializer
+    many_to_many_field = 'permissions'
 
-    def get(self, request, main_id, optional_id=None):
 
-        data = PermissionSerializer(Group.objects.get(pk=main_id).permissions.all(), many=True)
+class ChangeUserGroupsApiView(AdminApiView, ManyToManyApiView):
+    changeable_model = User
+    serializer = GroupSerializer
+    many_to_many_field = 'groups'
 
-        return Response(data=data.data, status=status.HTTP_204_NO_CONTENT)
+
+class ChangeUserPermissionsApiView(ManyToManyApiView):
+    changeable_model = User
+    serializer = PermissionSerializer
+    many_to_many_field = 'user_permissions'
