@@ -23,25 +23,11 @@ urlpatterns = [
         views.ChangeGroupPermissionsApiView.as_view(), name='change_group_permissions'
     ),
     path(
-        'group_permissions/<int:main_id>/permission/<int:optional_id>',
-        views.ChangeGroupPermissionsApiView.as_view(), name='change_group_permissions'
-    ),
-
-    path(
         'user_groups/<int:main_id>/',
         views.ChangeUserGroupsApiView.as_view(), name='change_user_groups'
     ),
     path(
-        'user_groups/<int:main_id>/group/<int:optional_id>',
-        views.ChangeUserGroupsApiView.as_view(), name='change_user_groups'
-    ),
-
-    path(
         'user_permissions/<int:main_id>/',
-        views.ChangeUserPermissionsApiView.as_view(), name='change_user_permissions'
-    ),
-    path(
-        'user_permissions/<int:main_id>/permission/<int:optional_id>',
         views.ChangeUserPermissionsApiView.as_view(), name='change_user_permissions'
     ),
 ]
