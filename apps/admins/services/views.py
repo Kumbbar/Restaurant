@@ -7,7 +7,8 @@ from rest_framework.serializers import ModelSerializer
 
 from django.db.models import Model, QuerySet
 
-from core.exceptions import BadQueryParams
+from .validation import validate_query_data
+
 
 QUERY_IDS_PARAM: Final = 'ids'
 
@@ -30,7 +31,7 @@ class ManyToManyApiView(APIView):
             return self.__class__.serializer(data, many=True)
         return self.__class__.serializer(data, many=False)
 
-    def __get_data(self, main_id):
+    def __get_data(self):
         return self.many_to_many_relationship.all()
 
     def __get_changeable_model(self, main_id):
@@ -39,29 +40,19 @@ class ManyToManyApiView(APIView):
     def __get_many_to_many_relationship(self, changeable_model_object):
         return getattr(changeable_model_object, self.__class__.many_to_many_field)
 
-    @staticmethod
-    def __validate_query_data(query_list):
-        try:
-            query_list = query_list.split(',')
-            if not query_list:
-                raise BadQueryParams('No values selected')
-            return [int(id) for id in query_list]
-        except ValueError:
-            raise BadQueryParams('Invalid param')
-
     def get(self, request, main_id):
-        data = self.__get_data(main_id)
+        data = self.__get_data()
         serialized_data = self.__serialize(data)
         return Response(data=serialized_data.data, status=status.HTTP_200_OK)
 
     def post(self, request, main_id):
-        self.query_data = self.__validate_query_data(self.query_data)
+        self.query_data = validate_query_data(self.query_data)
         for id in self.query_data:
             self.many_to_many_relationship.add(self.relationship_object_class.objects.get(pk=id))
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, main_id):
-        self.query_data = self.__validate_query_data(self.query_data)
+        self.query_data = validate_query_data(self.query_data)
         for id in self.query_data:
             self.many_to_many_relationship.remove(self.relationship_object_class.objects.get(pk=id))
         return Response(status=status.HTTP_204_NO_CONTENT)

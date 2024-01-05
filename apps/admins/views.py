@@ -87,7 +87,7 @@ class ChangeUserGroupsApiView(AdminApiView, ManyToManyApiView):
     many_to_many_field = 'groups'
 
 
-class ChangeUserPermissionsApiView(ManyToManyApiView):
+class ChangeUserPermissionsApiView(AdminApiView, ManyToManyApiView):
     changeable_model = User
     serializer = PermissionSerializer
     many_to_many_field = 'user_permissions'
