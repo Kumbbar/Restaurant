@@ -33,6 +33,9 @@ class UserViewSet(CoreViewSet, AdminApiView):
         else:
             return UsersRUDListSerializer
 
+    search_fields = ['username', 'first_name', 'last_name']
+    ordering = ['-id']
+
 
 class PermissionViewSet(CoreViewSet, AdminApiView):
     queryset = get_all_permissions()
@@ -41,7 +44,7 @@ class PermissionViewSet(CoreViewSet, AdminApiView):
     search_fields = ['codename', 'name']
     filterset_fields = ['content_type_id']
     ordering_fields = ['codename']
-    ordering = ['-codename']
+    ordering = ['-id']
 
 
 class GroupViewSet(CoreViewSet, AdminApiView):
@@ -50,7 +53,7 @@ class GroupViewSet(CoreViewSet, AdminApiView):
 
     search_fields = ['name']
     ordering_fields = ['name']
-    ordering = ['-name']
+    ordering = ['-id']
 
 
 class ContentTypeViewSet(CoreViewSet, AdminApiView):
@@ -59,7 +62,7 @@ class ContentTypeViewSet(CoreViewSet, AdminApiView):
 
     search_fields = ['app_label', 'model']
     ordering_fields = ['app_label']
-    ordering = ['-app_label']
+    ordering = ['-id']
 
 
 class ForceResetUserPasswordApiView(AdminApiView, ResetUserPasswordApiView):

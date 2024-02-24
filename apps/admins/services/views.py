@@ -59,7 +59,7 @@ class ManyToManyApiView(APIView):
 
     def dispatch(self, request, *args, **kwargs):
         if QUERY_IDS_PARAM in request.GET:
-            self.query_data = request.GET[QUERY_IDS_PARAM]
+             self.query_data = request.GET[QUERY_IDS_PARAM]
         self.changeable_model_object = self.__get_changeable_model(kwargs[self.__class__.main_id_query_name])
         self.many_to_many_relationship = self.__get_many_to_many_relationship(self.changeable_model_object)
         self.relationship_object_class = self.many_to_many_relationship.model
