@@ -15,14 +15,8 @@ class Restaurant(models.Model):
     date_of_open = models.DateField(auto_now_add=True)
 
 
-class Menu(models.Model):
-    """
-    List of dishes for a specific dates
-    """
+class DishType(models.Model):
     name = models.CharField(max_length=256, null=False)
-    date_of_start = models.DateField()
-    date_of_end = models.DateField()
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.SET_NULL, null=True)
 
 
 class Dish(models.Model):
@@ -30,10 +24,26 @@ class Dish(models.Model):
     Dish version for specific menu
     """
     name = models.CharField(max_length=256, null=False)
-    description = models.CharField(max_length=256, null=False)
-    menu = models.ForeignKey(Menu, on_delete=models.CASCADE, related_name='menu')
-    weight = models.FloatField()
-    price = models.FloatField()
+    description = models.CharField(max_length=256, null=True)
+    dish_type = models.ForeignKey(DishType, on_delete=models.SET_NULL, null=True)
+    weight = models.FloatField(null=True)
+    price = models.FloatField(null=True)
+    image = models.ImageField(null=True, upload_to='images/')
+
+
+class Menu(models.Model):
+    """
+    List of dishes for a specific dates
+    """
+    name = models.CharField(max_length=256, null=False)
+    dishes = models.ManyToManyField(Dish)
+
+
+class RestaurantPlanMenu(models.Model):
+    datetime_start = models.DateTimeField(null=False)
+    datetime_end = models.DateTimeField(null=True)
+    menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
 
 
 class MobilePhoneModel(models.Model):
