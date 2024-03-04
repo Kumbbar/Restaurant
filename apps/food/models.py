@@ -23,7 +23,7 @@ class Dish(models.Model):
     """
     Dish version for specific menu
     """
-    name = models.CharField(max_length=256, null=False)
+    name = models.CharField(max_length=256, null=False, unique=True)
     description = models.CharField(max_length=256, null=True)
     dish_type = models.ForeignKey(DishType, on_delete=models.SET_NULL, null=True)
     weight = models.FloatField(null=True)
