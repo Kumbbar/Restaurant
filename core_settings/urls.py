@@ -11,7 +11,7 @@ urlpatterns = [
     path('admin/', include('apps.admins.urls')),
     path('food/', include('apps.food.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-4
+
 debug_urls = (
     path('docs/', include('rest_framework.urls')),
     path('admin_panel/', admin.site.urls)
