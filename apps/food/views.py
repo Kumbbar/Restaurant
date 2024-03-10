@@ -1,8 +1,8 @@
 from rest_framework.parsers import MultiPartParser, FormParser
 
-from .models import Dish
+from .models import Dish, DishType
 from core.viewsets import CoreViewSet
-from .serializers import DishSerializer
+from .serializers import DishSerializer, DishTypeSerializer
 
 
 class DishViewSet(CoreViewSet):
@@ -10,5 +10,9 @@ class DishViewSet(CoreViewSet):
     serializer_class = DishSerializer
     parser_classes = (MultiPartParser, FormParser)
 
+
+class DishTypeViewSet(CoreViewSet):
+    queryset = DishType.objects.all()
+    serializer_class = DishTypeSerializer
 
 

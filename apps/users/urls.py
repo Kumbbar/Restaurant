@@ -9,5 +9,5 @@ urlpatterns = [
     path('logout/', views.UserLogoutAPI.as_view(), name='logout'),
     path('delete_me/', views.UserSelfDeleteAPI.as_view(), name='delete_me'),
     path('reset_password/', views.UserResetPasswordAPI.as_view(), name='reset_password'),
-    path('is_authenticated/', views.IsAuthenticatedView.as_view(), name='is_authenticated'),
+    path('me/', views.IsAuthenticatedView.as_view(), name='is_authenticated'),
 ]

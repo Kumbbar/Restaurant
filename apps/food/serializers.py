@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Dish
+from .models import Dish, DishType
 
 
 class DishSerializer(serializers.ModelSerializer):
@@ -17,3 +17,11 @@ class DishSerializer(serializers.ModelSerializer):
             'image'
         )
 
+
+class DishTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DishType
+        fields = (
+            'id',
+            'name'
+        )

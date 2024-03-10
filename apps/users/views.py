@@ -68,7 +68,7 @@ class UserResetPasswordAPI(ResetUserPasswordApiView):
 
 class IsAuthenticatedView(APIView):
     """
-    User permissions for services.
+    User data.
     """
     attrs = (
         'id',
