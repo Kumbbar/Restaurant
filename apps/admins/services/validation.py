@@ -8,4 +8,4 @@ def validate_query_data(query_param: str):
             raise BadQueryParams('No values selected')
         return [int(id) for id in query_list]
     except ValueError:
-        raise BadQueryParams('Invalid param')
+        raise BadQueryParams('Invalid params')

@@ -12,7 +12,7 @@ class Restaurant(models.Model):
     boss = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
-    date_of_open = models.DateField(auto_now_add=True, null=True)
+    date_of_open = models.DateField(null=True)
 
 
 class DishType(models.Model):
@@ -40,8 +40,8 @@ class Menu(models.Model):
 
 
 class RestaurantPlanMenu(models.Model):
-    datetime_start = models.DateTimeField(null=False)
-    datetime_end = models.DateTimeField(null=True)
+    date_start = models.DateField(null=True)
+    date_end = models.DateField(null=True)
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
 

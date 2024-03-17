@@ -43,7 +43,11 @@ class ManyToManyApiView(APIView):
     def get(self, request, main_id):
         data = self.__get_data()
         serialized_data = self.__serialize(data)
-        return Response(data=serialized_data.data, status=status.HTTP_200_OK)
+        result = dict(
+            count=len(serialized_data.data),
+            results=serialized_data.data
+        )
+        return Response(data=result, status=status.HTTP_200_OK)
 
     def post(self, request, main_id):
         self.query_data = validate_query_data(self.query_data)

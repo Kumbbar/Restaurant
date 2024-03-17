@@ -11,4 +11,5 @@ router.register('restaurants', views.RestaurantViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('test/', views.Test.as_view())
     ]
