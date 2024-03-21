@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Dish, DishType, Restaurant
+from .models import Dish, DishType, Restaurant, Menu
 
 
 class DishSerializer(serializers.ModelSerializer):
@@ -39,4 +39,13 @@ class RestaurantSerializer(serializers.ModelSerializer):
             'latitude',
             'longitude',
             'date_of_open'
+        )
+
+
+class MenuSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Menu
+        fields = (
+            'id',
+            'name'
         )

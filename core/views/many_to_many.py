@@ -10,7 +10,7 @@ from rest_framework.serializers import ModelSerializer
 
 from django.db.models import Model, QuerySet, Q
 
-from .validation import validate_query_data
+from ..validation.query import validate_query_data
 
 
 QUERY_IDS_PARAM: Final = 'ids'
@@ -30,9 +30,10 @@ class ManyToManyApiView(APIView):
         self.changeable_model_object = None
 
     def __serialize(self, data):
+        context = {'request': self.request}
         if isinstance(data, QuerySet):
-            return self.__class__.serializer(data, many=True)
-        return self.__class__.serializer(data, many=False)
+            return self.__class__.serializer(data, many=True, context=context)
+        return self.__class__.serializer(data, many=False, context=context)
 
     def __get_data(self):
         all_fields = self.relationship_object_class._meta.get_fields()

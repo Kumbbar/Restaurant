@@ -8,3 +8,7 @@ class PublicApiView:
 
 class AdminApiView:
     permission_classes = (IsAuthenticated, IsAdminUser)
+
+
+class LoginRequiredApiView:
+    permission_classes = (IsAuthenticated,)

@@ -15,7 +15,7 @@ from .serializers import (
 from .services.selectors.permissions import get_all_permissions
 from .services.selectors.content_types import get_all_content_types
 from .services.selectors.groups import get_all_groups
-from .services.views import ManyToManyApiView
+from core.views.many_to_many import ManyToManyApiView
 from apps.users.models import User
 
 from core.services.selectors.users import get_all_users, get_user_by_id
