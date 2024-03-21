@@ -1,11 +1,14 @@
+from functools import reduce
+from operator import or_
 from typing import Final
 
+from django.db import models
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.serializers import ModelSerializer
 
-from django.db.models import Model, QuerySet
+from django.db.models import Model, QuerySet, Q
 
 from .validation import validate_query_data
 
@@ -32,7 +35,12 @@ class ManyToManyApiView(APIView):
         return self.__class__.serializer(data, many=False)
 
     def __get_data(self):
-        return self.many_to_many_relationship.all()
+        all_fields = self.relationship_object_class._meta.get_fields()
+        search_fields = [f.name for f in all_fields if isinstance(
+            f, (models.CharField, models.IntegerField, models.IntegerField))
+        ]
+        filter_condition = reduce(or_, [Q(**{'{}__contains'.format(f): self.request.GET['search']}) for f in search_fields], Q())
+        return self.many_to_many_relationship.filter(filter_condition)
 
     def __get_changeable_model(self, main_id):
         return self.__class__.changeable_model.objects.get(pk=main_id)
@@ -42,6 +50,7 @@ class ManyToManyApiView(APIView):
 
     def get(self, request, main_id):
         data = self.__get_data()
+
         serialized_data = self.__serialize(data)
         result = dict(
             count=len(serialized_data.data),
