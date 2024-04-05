@@ -22,6 +22,7 @@ class UsersRUDListSerializer(serializers.ModelSerializer):
             'is_staff',
             'is_superuser',
             'is_active',
+            'current_restaurant',
             'email',
             'date_joined'
         )

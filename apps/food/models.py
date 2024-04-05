@@ -10,8 +10,8 @@ Minute = NewType('Minutes', int)
 class Restaurant(models.Model):
     name = models.CharField(max_length=256, null=False)
     boss = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
     date_of_open = models.DateField(null=True)
 
 
