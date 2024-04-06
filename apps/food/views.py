@@ -5,9 +5,10 @@ from rest_framework.views import APIView
 
 from core.views.many_to_many import ManyToManyApiView
 from core.views.permissions import LoginRequiredApiView
-from .models import Dish, DishType, Restaurant, Menu
+from .models import Dish, DishType, Restaurant, Menu, RestaurantPlanMenu
 from core.viewsets import CoreViewSet
-from .serializers import DishSerializer, DishTypeSerializer, RestaurantSerializer, MenuSerializer
+from .serializers import DishSerializer, DishTypeSerializer, RestaurantSerializer, MenuSerializer, \
+    RestaurantPlanMenuSerializer
 
 
 class DishViewSet(LoginRequiredApiView, CoreViewSet):
@@ -39,6 +40,13 @@ class ChangeMenuDishesApiView(LoginRequiredApiView, ManyToManyApiView):
     changeable_model = Menu
     serializer = DishSerializer
     many_to_many_field = 'dishes'
+
+
+class RestaurantPlanMenuViewSet(LoginRequiredApiView, CoreViewSet):
+    queryset = RestaurantPlanMenu.objects.all()
+    search_fields = ['date_start', 'date_start']
+    filterset_fields = ['menu', 'restaurant']
+    serializer_class = RestaurantPlanMenuSerializer
 
 
 class Test(APIView):
