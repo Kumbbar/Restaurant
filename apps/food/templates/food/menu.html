@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>MENU</title>
+     <link rel="stylesheet" href="{% static 'food/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'food/css/fontawesome.css' %}">
+    <link rel="stylesheet" href="{% static 'food/css/main.css' %}">
+  </head>
+  <body>
+  {% for menu_dish_type_data in ordered_menu_dishes %}
+  <div class="container" style="margin-top: 5px; margin-bottom: 5px">
+      <div class="row">
+          <div class="col-12">
+              <nav class="main-nav">
+                <h1 style="margin-top: 70px; margin-bottom: 5px; font-size: 70px;">{{ menu_dish_type_data.type.name }}</h1>
+              </nav>
+          </div>
+      </div>
+  </div>
+  {% for dish in menu_dish_type_data.dishes %}
+    <div class="featured section">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-4">
+            <div class="left-image">
+              <img src="{{ dish.image.url }}" alt="">
+              <a href="#" style="color: red"><img alt="" style="max-width: 60px; padding: 0px;"></a>
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <div class="section-heading" style="padding: 0px;">
+              <h2 style="margin-top: 0px;">{{ dish.name }}</h2>
+            </div>
+            <div class="accordion" id="accordionExample" style="word-wrap: break-word; width: 150%">
+              {{ dish.description }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+  {% endfor %}
+  </body>
+</html>

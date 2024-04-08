@@ -24,7 +24,7 @@ class Dish(models.Model):
     Dish version for specific menu
     """
     name = models.CharField(max_length=256, null=False, unique=True)
-    description = models.CharField(max_length=256, null=True)
+    description = models.CharField(max_length=5000, null=True)
     dish_type = models.ForeignKey(DishType, on_delete=models.SET_NULL, null=True)
     weight = models.FloatField(null=True)
     price = models.FloatField(null=True)
@@ -40,7 +40,7 @@ class Menu(models.Model):
 
 
 class RestaurantPlanMenu(models.Model):
-    date_start = models.DateField(null=True)
+    date_start = models.DateField(null=False)
     date_end = models.DateField(null=True)
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
