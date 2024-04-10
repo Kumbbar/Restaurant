@@ -9,6 +9,7 @@ router.register('dish_types', views.DishTypeViewSet)
 router.register('restaurants', views.RestaurantViewSet)
 router.register('menu', views.MenuViewSet)
 router.register('restaurant_plan_menu', views.RestaurantPlanMenuViewSet)
+router.register('clients', views.ClientViewSet)
 
 
 urlpatterns = [

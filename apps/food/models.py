@@ -1,8 +1,9 @@
 import datetime
 from typing import NewType
-from django.core.validators import MinLengthValidator
+from django.core.validators import MinLengthValidator, MaxValueValidator
 from django.db import models
 
+from apps.food.services.validators import validate_phone_number
 
 Minute = NewType('Minutes', int)
 
@@ -46,31 +47,26 @@ class RestaurantPlanMenu(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
 
 
-class MobilePhoneModel(models.Model):
-    """
-    Base model for russian
-    mobile phone numbers without country code
-    """
-
+class Client(models.Model):
+    name = models.CharField(max_length=256, null=False)
+    surname = models.CharField(max_length=256, null=False)
+    patronymic = models.CharField(max_length=256, null=True)
     phone_number = models.CharField(
-        max_length=10,
-        validators=[MinLengthValidator(10)],
-        null=False
+        max_length=30,
+        validators=[validate_phone_number],
+        null=False,
+        unique=True
     )
 
 
-class TableReservation(MobilePhoneModel):
-    """
-    Table reservation
-    """
-    table_number = models.IntegerField(null=True)
-    name = models.CharField(max_length=256, null=False)
-    surname = models.CharField(max_length=256, null=False)
+class TableReservation(models.Model):
+    table_number = models.IntegerField(null=False)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
     time_of_start = models.DateTimeField(null=False)
     time_of_end = models.DateTimeField(null=True)
     confirmed = models.BooleanField(default=False, null=False)
     has_come = models.BooleanField(default=False, null=False)
-    number_of_people = models.IntegerField(null=False)
+    number_of_people = models.IntegerField(null=False, default=1)
 
     DEFAULT_RESERVATION_TIME: Minute = Minute(30)
 
@@ -80,6 +76,20 @@ class TableReservation(MobilePhoneModel):
         return super().save(force_insert, force_update, using, update_fields)
 
 
-class PhoneBlackList(MobilePhoneModel):
-    blocking_event = models.OneToOneField(TableReservation, on_delete=models.SET_NULL, null=True)
+class OrderStage(models.Model):
+    name = models.CharField(max_length=256, null=False)
 
+
+class OrderDish(models.Model):
+    dish = models.ForeignKey(Dish, on_delete=models.SET_NULL, null=True)
+    count = models.IntegerField(validators=[MaxValueValidator(100)])
+    stage = models.ForeignKey(OrderStage, on_delete=models.SET_DEFAULT, null=False, default=1)
+
+
+class Order(models.Model):
+    dishes = models.ManyToManyField(OrderDish)
+    client = models.ForeignKey(Dish, on_delete=models.SET_NULL, null=True)
+
+
+class ClientBlackList(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=False)
