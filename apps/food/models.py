@@ -59,13 +59,20 @@ class Client(models.Model):
     )
 
 
+class Table(models.Model):
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    number = models.IntegerField(null=False)
+    description = models.CharField(max_length=2000, null=True)
+
+
 class TableReservation(models.Model):
-    table_number = models.IntegerField(null=False)
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True)
+    table = models.ForeignKey(Table, on_delete=models.SET_NULL, null=True)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.SET_NULL, null=True)
+    client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True)
     time_of_start = models.DateTimeField(null=False)
     time_of_end = models.DateTimeField(null=True)
     confirmed = models.BooleanField(default=False, null=False)
-    has_come = models.BooleanField(default=False, null=False)
+    has_come = models.BooleanField(default=None, null=False)
     number_of_people = models.IntegerField(null=False, default=1)
 
     DEFAULT_RESERVATION_TIME: Minute = Minute(30)
@@ -80,15 +87,19 @@ class OrderStage(models.Model):
     name = models.CharField(max_length=256, null=False)
 
 
-class OrderDish(models.Model):
-    dish = models.ForeignKey(Dish, on_delete=models.SET_NULL, null=True)
-    count = models.IntegerField(validators=[MaxValueValidator(100)])
-    stage = models.ForeignKey(OrderStage, on_delete=models.SET_DEFAULT, null=False, default=1)
-
-
 class Order(models.Model):
-    dishes = models.ManyToManyField(OrderDish)
-    client = models.ForeignKey(Dish, on_delete=models.SET_NULL, null=True)
+    dishes = models.ManyToManyField(Dish, through='OrderDish')
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.SET_NULL, null=True)
+    client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True)
+    table = models.ForeignKey(Table, on_delete=models.SET_NULL, null=True)
+    stage = models.ForeignKey(OrderStage, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class OrderDish(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    dish = models.ForeignKey(Dish, on_delete=models.CASCADE)
+    count = models.IntegerField(validators=[MaxValueValidator(100)])
 
 
 class ClientBlackList(models.Model):

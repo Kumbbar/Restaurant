@@ -10,6 +10,9 @@ router.register('restaurants', views.RestaurantViewSet)
 router.register('menu', views.MenuViewSet)
 router.register('restaurant_plan_menu', views.RestaurantPlanMenuViewSet)
 router.register('clients', views.ClientViewSet)
+router.register('order_stages', views.OrderStageViewSet)
+router.register('tables', views.TableViewSet)
+router.register('orders', views.OrderViewSet, basename='orders')
 
 
 urlpatterns = [

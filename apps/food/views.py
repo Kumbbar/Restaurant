@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.shortcuts import render, get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -7,10 +8,10 @@ from rest_framework.views import APIView
 from core.validation.query import validate_query_data
 from core.views.many_to_many import ManyToManyApiView
 from core.views.permissions import LoginRequiredApiView
-from .models import Dish, DishType, Restaurant, Menu, RestaurantPlanMenu, Client
+from .models import Dish, DishType, Restaurant, Menu, RestaurantPlanMenu, Client, OrderStage, Table, Order
 from core.viewsets import CoreViewSet
 from .serializers import DishSerializer, DishTypeSerializer, RestaurantSerializer, MenuSerializer, \
-    RestaurantPlanMenuSerializer, ClientSerializer
+    RestaurantPlanMenuSerializer, ClientSerializer, OrderStageSerializer, TableSerializer, OrderSerializer
 
 
 class DishViewSet(LoginRequiredApiView, CoreViewSet):
@@ -53,8 +54,33 @@ class RestaurantPlanMenuViewSet(LoginRequiredApiView, CoreViewSet):
 
 class ClientViewSet(LoginRequiredApiView, CoreViewSet):
     queryset = Client.objects.all()
-    search_fields = ['name', 'surname', 'patronymic']
+    search_fields = ['name', 'surname', 'patronymic', 'phone_number']
     serializer_class = ClientSerializer
+
+
+class OrderStageViewSet(LoginRequiredApiView, CoreViewSet):
+    queryset = OrderStage.objects.all()
+    search_fields = ['name']
+    serializer_class = OrderStageSerializer
+
+
+class TableViewSet(LoginRequiredApiView, CoreViewSet):
+    queryset = Table.objects.all()
+    search_fields = ['restaurant__name', 'number', 'description']
+    serializer_class = TableSerializer
+
+
+class OrderViewSet(LoginRequiredApiView, CoreViewSet):
+    def get_queryset(self):
+        return Order.objects.filter(restaurant=self.request.user.current_restaurant).order_by('-created_at')
+
+    search_fields = ['client__name', 'client__surname', 'table_number']
+    serializer_class = OrderSerializer
+
+    def perform_create(self, serializer):
+        # here you will send `created_by` in the `validated_data`
+        super().perform_create(serializer)
+        serializer.save(restaurant=self.request.user.current_restaurant)
 
 
 class MenuTemplate(APIView):
