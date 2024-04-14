@@ -83,8 +83,16 @@ class TableReservation(models.Model):
         return super().save(force_insert, force_update, using, update_fields)
 
 
-class OrderStage(models.Model):
-    name = models.CharField(max_length=256, null=False)
+class OrderStages:
+    NOT_READY = "not ready"
+    READY = "ready"
+    FINISHED = "finished"
+
+    ORDER_STAGES_CHOICES = (
+        (NOT_READY, "not ready"),
+        (READY, "ready"),
+        (FINISHED, "finished")
+    )
 
 
 class Order(models.Model):
@@ -92,14 +100,21 @@ class Order(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.SET_NULL, null=True)
     client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True)
     table = models.ForeignKey(Table, on_delete=models.SET_NULL, null=True)
-    stage = models.ForeignKey(OrderStage, on_delete=models.SET_NULL, null=True)
+    stage = models.CharField(null=False,
+                             max_length=256,
+                             choices=OrderStages.ORDER_STAGES_CHOICES, default=OrderStages.NOT_READY
+                             )
     created_at = models.DateTimeField(auto_now_add=True)
 
 
 class OrderDish(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    dish = models.ForeignKey(Dish, on_delete=models.CASCADE)
-    count = models.IntegerField(validators=[MaxValueValidator(100)])
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=False)
+    dish = models.ForeignKey(Dish, on_delete=models.CASCADE, null=False)
+    count = models.IntegerField()
+    stage = models.CharField(null=False,
+                             max_length=256,
+                             choices=OrderStages.ORDER_STAGES_CHOICES, default=OrderStages.NOT_READY
+                             )
 
 
 class ClientBlackList(models.Model):

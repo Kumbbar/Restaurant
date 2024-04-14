@@ -1,6 +1,10 @@
+import datetime
+
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q, Sum
 from django.shortcuts import render, get_object_or_404
+from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,10 +12,12 @@ from rest_framework.views import APIView
 from core.validation.query import validate_query_data
 from core.views.many_to_many import ManyToManyApiView
 from core.views.permissions import LoginRequiredApiView
-from .models import Dish, DishType, Restaurant, Menu, RestaurantPlanMenu, Client, OrderStage, Table, Order
-from core.viewsets import CoreViewSet
+from .models import Dish, DishType, Restaurant, Menu, RestaurantPlanMenu, Client, Table, Order, OrderDish, OrderStages
+from core.viewsets import CoreViewSet, CoreGetOnlyViewSet, CoreGetUpdateOnlyViewSet
 from .serializers import DishSerializer, DishTypeSerializer, RestaurantSerializer, MenuSerializer, \
-    RestaurantPlanMenuSerializer, ClientSerializer, OrderStageSerializer, TableSerializer, OrderSerializer
+    RestaurantPlanMenuSerializer, ClientSerializer, TableSerializer, OrderSerializer, OrderDishSerializer, \
+    OrderDishCookSerializer
+from .services.views import BaseOrderDishEditViewSet
 
 
 class DishViewSet(LoginRequiredApiView, CoreViewSet):
@@ -19,6 +25,26 @@ class DishViewSet(LoginRequiredApiView, CoreViewSet):
     search_fields = ['name']
     serializer_class = DishSerializer
     parser_classes = (MultiPartParser, FormParser)
+
+
+class MenuPlanDishesViewSet(LoginRequiredApiView, CoreGetOnlyViewSet):
+    def get_queryset(self):
+        result = None
+
+        planned_menus = RestaurantPlanMenu.objects.filter(
+            Q(date_end__gte=str(datetime.date.today())) | Q(date_end__isnull=True),
+            restaurant=self.request.user.current_restaurant,
+            date_start__lte=str(datetime.date.today()),
+        )
+        for planned_obj in planned_menus:
+            if not result:
+                result = planned_obj.menu.dishes.all()
+            else:
+                result = result | planned_obj.menu.dishes.all()
+
+        return result.distinct()
+
+    serializer_class = DishSerializer
 
 
 class DishTypeViewSet(LoginRequiredApiView, CoreViewSet):
@@ -58,15 +84,16 @@ class ClientViewSet(LoginRequiredApiView, CoreViewSet):
     serializer_class = ClientSerializer
 
 
-class OrderStageViewSet(LoginRequiredApiView, CoreViewSet):
-    queryset = OrderStage.objects.all()
-    search_fields = ['name']
-    serializer_class = OrderStageSerializer
-
-
 class TableViewSet(LoginRequiredApiView, CoreViewSet):
     queryset = Table.objects.all()
     search_fields = ['restaurant__name', 'number', 'description']
+    serializer_class = TableSerializer
+
+
+class RestaurantTablesViewSet(LoginRequiredApiView, CoreGetOnlyViewSet):
+    def get_queryset(self):
+        return Table.objects.filter(restaurant=self.request.user.current_restaurant)
+
     serializer_class = TableSerializer
 
 
@@ -74,8 +101,9 @@ class OrderViewSet(LoginRequiredApiView, CoreViewSet):
     def get_queryset(self):
         return Order.objects.filter(restaurant=self.request.user.current_restaurant).order_by('-created_at')
 
-    search_fields = ['client__name', 'client__surname', 'table_number']
+    search_fields = ['client__name', 'client__surname', 'table__number']
     serializer_class = OrderSerializer
+    filterset_fields = ['stage']
 
     def perform_create(self, serializer):
         # here you will send `created_by` in the `validated_data`
@@ -83,7 +111,7 @@ class OrderViewSet(LoginRequiredApiView, CoreViewSet):
         serializer.save(restaurant=self.request.user.current_restaurant)
 
 
-class MenuTemplate(APIView):
+class MenuTemplateView(APIView):
     def get(self, request, menu_id):
         menu = get_object_or_404(Menu, pk=menu_id)
         dish_types_order = validate_query_data(request.GET.get('order', ''))
@@ -104,11 +132,70 @@ class MenuTemplate(APIView):
         return result
 
 
-class Test(APIView):
-    def post(self, request):
-        menu = Menu.objects.get(pk=1)
-        dish = Dish.objects.get(pk=2)
-        menu.dishes.add(dish)
-        dish = Dish.objects.get(pk=2)
-        menu.dishes.add(dish)
-        return Response(status=200)
+class OrderPriceView(APIView):
+    def get(self, request, order_id):
+        order = get_object_or_404(Order, pk=order_id)
+        order_dishes = OrderDish.objects.filter(order=order).select_related('dish')
+        result_price = 0
+        for order_dish in order_dishes:
+            result_price += order_dish.dish.price * order_dish.count
+        return Response(data=dict(price=result_price), status=status.HTTP_200_OK)
+
+
+class ChangeOrderDishView(APIView):
+    def get(self, request, order_id):
+        order = get_object_or_404(Order, pk=order_id)
+        order_dishes = OrderDish.objects.filter(order=order, dish__name__icontains=request.GET['search'])
+        serialized_dishes = OrderDishSerializer(data=order_dishes, many=True)
+        serialized_dishes.is_valid()
+        result = dict(
+            count=len(serialized_dishes.data),
+            results=serialized_dishes.data
+        )
+        return Response(data=result, status=status.HTTP_200_OK)
+
+    def create_request_is_invalid(self):
+        for key in ['dish_id', 'count']:
+            if key not in self.request.data:
+                return Response(
+                    data=dict(
+                        key='must be set'
+                    ),
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        if not self.request.data['count'].isdigit():
+            return Response(
+                data=dict(
+                    count='invalid number'
+                ),
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def post(self, request, order_id):
+        error = self.create_request_is_invalid()
+        if error:
+            return error
+        dish_id = int(request.data['dish_id'])
+        count = int(request.data['count'])
+        order = get_object_or_404(Order, pk=order_id)
+        add_dish = get_object_or_404(Dish, pk=dish_id)
+        OrderDish.objects.create(order=order, dish=add_dish, count=count)
+        order.stage = OrderStages.NOT_READY
+        order.save()
+        return Response(status=status.HTTP_201_CREATED)
+
+    def delete(self, request, order_id):
+        order_dish_id = request.data.get('order_dish_id', 0)
+        get_object_or_404(OrderDish, pk=order_dish_id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+class OrderDishCookViewSet(BaseOrderDishEditViewSet):
+    stage_to_set = OrderStages.READY
+    stage_to_search = OrderStages.NOT_READY
+
+
+class OrderDishReadyViewSet(BaseOrderDishEditViewSet):
+    stage_to_set = OrderStages.FINISHED
+    stage_to_search = OrderStages.READY
