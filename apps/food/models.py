@@ -60,14 +60,14 @@ class Client(models.Model):
 
 
 class Table(models.Model):
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, null=False)
     number = models.IntegerField(null=False)
     description = models.CharField(max_length=2000, null=True)
 
 
 class TableReservation(models.Model):
-    table = models.ForeignKey(Table, on_delete=models.SET_NULL, null=True)
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.SET_NULL, null=True)
+    table = models.ForeignKey(Table, on_delete=models.CASCADE, null=False)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, null=False)
     client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True)
     time_of_start = models.DateTimeField(null=False)
     time_of_end = models.DateTimeField(null=True)
@@ -79,7 +79,7 @@ class TableReservation(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.time_of_end is None:
-            self.time_of_end += datetime.timedelta(minutes=self.__class__.DEFAULT_RESERVATION_TIME)
+            self.time_of_end = self.time_of_start + datetime.timedelta(minutes=self.__class__.DEFAULT_RESERVATION_TIME)
         return super().save(force_insert, force_update, using, update_fields)
 
 

@@ -12,11 +12,12 @@ from rest_framework.views import APIView
 from core.validation.query import validate_query_data
 from core.views.many_to_many import ManyToManyApiView
 from core.views.permissions import LoginRequiredApiView
-from .models import Dish, DishType, Restaurant, Menu, RestaurantPlanMenu, Client, Table, Order, OrderDish, OrderStages
+from .models import Dish, DishType, Restaurant, Menu, RestaurantPlanMenu, Client, Table, Order, OrderDish, OrderStages, \
+    TableReservation
 from core.viewsets import CoreViewSet, CoreGetOnlyViewSet, CoreGetUpdateOnlyViewSet
 from .serializers import DishSerializer, DishTypeSerializer, RestaurantSerializer, MenuSerializer, \
     RestaurantPlanMenuSerializer, ClientSerializer, TableSerializer, OrderSerializer, OrderDishSerializer, \
-    OrderDishCookSerializer
+    OrderDishCookSerializer, TableReservationSerializer
 from .services.views import BaseOrderDishEditViewSet
 
 
@@ -106,7 +107,6 @@ class OrderViewSet(LoginRequiredApiView, CoreViewSet):
     filterset_fields = ['stage']
 
     def perform_create(self, serializer):
-        # here you will send `created_by` in the `validated_data`
         super().perform_create(serializer)
         serializer.save(restaurant=self.request.user.current_restaurant)
 
@@ -190,7 +190,6 @@ class ChangeOrderDishView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
 class OrderDishCookViewSet(BaseOrderDishEditViewSet):
     stage_to_set = OrderStages.READY
     stage_to_search = OrderStages.NOT_READY
@@ -199,3 +198,15 @@ class OrderDishCookViewSet(BaseOrderDishEditViewSet):
 class OrderDishReadyViewSet(BaseOrderDishEditViewSet):
     stage_to_set = OrderStages.FINISHED
     stage_to_search = OrderStages.READY
+
+
+class TableReservationViewSet(LoginRequiredApiView, CoreViewSet):
+    def get_queryset(self):
+        return TableReservation.objects.filter(restaurant=self.request.user.current_restaurant).order_by('-id')
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        serializer.save(restaurant=self.request.user.current_restaurant)
+
+    search_fields = ['client__name', 'client__surname', 'table__number']
+    serializer_class = TableReservationSerializer

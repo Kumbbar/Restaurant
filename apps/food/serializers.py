@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Dish, DishType, Restaurant, Menu, RestaurantPlanMenu, Client, Table, Order, OrderDish
+from .models import Dish, DishType, Restaurant, Menu, RestaurantPlanMenu, Client, Table, Order, OrderDish, \
+    TableReservation
 
 
 class DishSerializer(serializers.ModelSerializer):
@@ -112,5 +113,19 @@ class OrderSerializer(serializers.ModelSerializer):
             'created_at'
         )
         read_only_fields = ['created_at', 'stage']
+
+
+class TableReservationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TableReservation
+        fields = (
+            'id',
+            'table',
+            'client',
+            'time_of_start',
+            'time_of_end',
+            'confirmed',
+            'has_come'
+        )
 
 
