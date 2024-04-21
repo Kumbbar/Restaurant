@@ -54,7 +54,7 @@ class Client(models.Model):
     phone_number = models.CharField(
         max_length=30,
         validators=[validate_phone_number],
-        null=False,
+        null=True,
         unique=True
     )
 
@@ -79,8 +79,12 @@ class TableReservation(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.time_of_end is None:
-            self.time_of_end = self.time_of_start + datetime.timedelta(minutes=self.__class__.DEFAULT_RESERVATION_TIME)
+            self.time_of_end = self.__class__.add_default_reservation_time(self.time_of_start)
         return super().save(force_insert, force_update, using, update_fields)
+
+    @classmethod
+    def add_default_reservation_time(cls, time):
+        return time + datetime.timedelta(minutes=cls.DEFAULT_RESERVATION_TIME)
 
 
 class OrderStages:
@@ -118,4 +122,4 @@ class OrderDish(models.Model):
 
 
 class ClientBlackList(models.Model):
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=False)
+    client = models.OneToOneField(Client, on_delete=models.CASCADE, null=False)

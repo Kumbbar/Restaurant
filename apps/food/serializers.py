@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Dish, DishType, Restaurant, Menu, RestaurantPlanMenu, Client, Table, Order, OrderDish, \
-    TableReservation
+    TableReservation, ClientBlackList
 
 
 class DishSerializer(serializers.ModelSerializer):
@@ -128,4 +128,12 @@ class TableReservationSerializer(serializers.ModelSerializer):
             'has_come'
         )
 
+
+class ClientBlackListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClientBlackList
+        fields = (
+            'id',
+            'client',
+        )
 

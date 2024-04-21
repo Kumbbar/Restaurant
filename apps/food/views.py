@@ -1,10 +1,10 @@
 import datetime
 
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q, Sum
 from django.shortcuts import render, get_object_or_404
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,11 +13,13 @@ from core.validation.query import validate_query_data
 from core.views.many_to_many import ManyToManyApiView
 from core.views.permissions import LoginRequiredApiView
 from .models import Dish, DishType, Restaurant, Menu, RestaurantPlanMenu, Client, Table, Order, OrderDish, OrderStages, \
-    TableReservation
+    TableReservation, ClientBlackList
 from core.viewsets import CoreViewSet, CoreGetOnlyViewSet, CoreGetUpdateOnlyViewSet
 from .serializers import DishSerializer, DishTypeSerializer, RestaurantSerializer, MenuSerializer, \
     RestaurantPlanMenuSerializer, ClientSerializer, TableSerializer, OrderSerializer, OrderDishSerializer, \
-    OrderDishCookSerializer, TableReservationSerializer
+    OrderDishCookSerializer, TableReservationSerializer, ClientBlackListSerializer
+from .services.black_list import check_user_is_blocked
+from .services.reservation import validate_reservation_time
 from .services.views import BaseOrderDishEditViewSet
 
 
@@ -85,6 +87,12 @@ class ClientViewSet(LoginRequiredApiView, CoreViewSet):
     serializer_class = ClientSerializer
 
 
+class ClientBlackListViewSet(LoginRequiredApiView, CoreViewSet):
+    queryset = ClientBlackList.objects.all()
+    search_fields = ['client__name', 'client__surname', 'client__patronymic', 'client__phone_number']
+    serializer_class = ClientBlackListSerializer
+
+
 class TableViewSet(LoginRequiredApiView, CoreViewSet):
     queryset = Table.objects.all()
     search_fields = ['restaurant__name', 'number', 'description']
@@ -92,6 +100,8 @@ class TableViewSet(LoginRequiredApiView, CoreViewSet):
 
 
 class RestaurantTablesViewSet(LoginRequiredApiView, CoreGetOnlyViewSet):
+    ordering = ['-number']
+
     def get_queryset(self):
         return Table.objects.filter(restaurant=self.request.user.current_restaurant)
 
@@ -107,8 +117,13 @@ class OrderViewSet(LoginRequiredApiView, CoreViewSet):
     filterset_fields = ['stage']
 
     def perform_create(self, serializer):
-        super().perform_create(serializer)
+        check_user_is_blocked(self.request)
         serializer.save(restaurant=self.request.user.current_restaurant)
+        super().perform_create(serializer)
+
+    def perform_update(self, serializer):
+        check_user_is_blocked(self.request)
+        super().perform_update(serializer)
 
 
 class MenuTemplateView(APIView):
@@ -201,12 +216,41 @@ class OrderDishReadyViewSet(BaseOrderDishEditViewSet):
 
 
 class TableReservationViewSet(LoginRequiredApiView, CoreViewSet):
+    search_fields = ['client__name', 'client__surname', 'table__number', 'time_of_start', 'time_of_end']
+    serializer_class = TableReservationSerializer
+    ordering = ['-time_of_start']
+
     def get_queryset(self):
-        return TableReservation.objects.filter(restaurant=self.request.user.current_restaurant).order_by('-id')
+        return TableReservation.objects.filter(restaurant=self.request.user.current_restaurant)
 
     def perform_create(self, serializer):
-        super().perform_create(serializer)
+        check_user_is_blocked(self.request)
+        validate_reservation_time(self.request)
         serializer.save(restaurant=self.request.user.current_restaurant)
+        super().perform_create(serializer)
 
-    search_fields = ['client__name', 'client__surname', 'table__number']
-    serializer_class = TableReservationSerializer
+    def perform_update(self, serializer):
+        check_user_is_blocked(self.request)
+        validate_reservation_time(self.request)
+        super().perform_update(serializer)
+
+
+class TodayRestaurantInfo(APIView):
+    def get(self, request):
+        if not request.user.current_restaurant:
+            raise ValidationError({'restaurant': 'your administrator must attach you to restaurant'})
+
+        tables_reserved = TableReservation.objects.filter(
+            restaurant=request.user.current_restaurant, time_of_start__date=datetime.date.today(),
+            time_of_start__gte=datetime.datetime.now()
+        ).count()
+
+        not_ready_orders = Order.objects.filter(
+            restaurant=request.user.current_restaurant, created_at__date=datetime.date.today(),
+            stage=OrderStages.NOT_READY
+        ).count()
+
+        return Response(
+            data=dict(tables_reserved=tables_reserved, not_ready_orders=not_ready_orders,),
+            status=status.HTTP_200_OK
+        )

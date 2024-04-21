@@ -11,6 +11,7 @@ router.register('restaurants', views.RestaurantViewSet)
 router.register('menu', views.MenuViewSet)
 router.register('restaurant_plan_menu', views.RestaurantPlanMenuViewSet)
 router.register('clients', views.ClientViewSet)
+router.register('clients_black_list', views.ClientBlackListViewSet)
 router.register('tables', views.TableViewSet)
 router.register('table_reservation', views.TableReservationViewSet, basename='table_reservation')
 router.register('restaurant_tables', views.RestaurantTablesViewSet, basename='restaurant_tables')
@@ -31,5 +32,7 @@ urlpatterns = [
         'order_dishes/<int:order_id>/',
         views.ChangeOrderDishView.as_view(),
         name='change_order_dishes'
-    )
+    ),
+    path('today_restaurant_info/', views.TodayRestaurantInfo.as_view()),
+
 ]
