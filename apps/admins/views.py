@@ -25,7 +25,7 @@ from core.serializers.users import CreateUserSerializer
 from core.viewsets import CoreViewSet
 
 
-class UserViewSet(CoreViewSet, AdminApiView):
+class UserViewSet(AdminApiView, CoreViewSet):
     queryset = get_all_users()
 
     def get_serializer_class(self):
@@ -38,7 +38,7 @@ class UserViewSet(CoreViewSet, AdminApiView):
     ordering = ['-id']
 
 
-class PermissionViewSet(CoreViewSet, AdminApiView):
+class PermissionViewSet(AdminApiView, CoreViewSet):
     queryset = get_all_permissions()
     serializer_class = PermissionSerializer
 
@@ -48,7 +48,7 @@ class PermissionViewSet(CoreViewSet, AdminApiView):
     ordering = ['-id']
 
 
-class GroupViewSet(CoreViewSet, AdminApiView):
+class GroupViewSet(AdminApiView, CoreViewSet):
     queryset = get_all_groups()
     serializer_class = GroupSerializer
 
@@ -57,7 +57,7 @@ class GroupViewSet(CoreViewSet, AdminApiView):
     ordering = ['-id']
 
 
-class ContentTypeViewSet(CoreViewSet, AdminApiView):
+class ContentTypeViewSet(AdminApiView, CoreViewSet):
     queryset = get_all_content_types()
     serializer_class = ContentTypeSerializer
 

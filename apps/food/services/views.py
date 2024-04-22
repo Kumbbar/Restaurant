@@ -10,7 +10,7 @@ from core.views.permissions import LoginRequiredApiView
 from core.viewsets import CoreGetUpdateOnlyViewSet
 
 
-class BaseOrderDishEditViewSet(LoginRequiredApiView, CoreGetUpdateOnlyViewSet):
+class BaseOrderDishEditViewSet(CoreGetUpdateOnlyViewSet):
     search_fields = ['dish__name', 'order__client__surname', 'order__table__number']
     serializer_class = OrderDishCookSerializer
     stage_to_set: str

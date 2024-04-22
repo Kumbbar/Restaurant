@@ -6,15 +6,17 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.permissions import ClientServicePermission, CookingPermission
 from core.validation.query import validate_query_data
 from core.views.many_to_many import ManyToManyApiView
-from core.views.permissions import LoginRequiredApiView
+from core.views.permissions import LoginRequiredApiView, FoodApiView, ClientServiceApiView, CookingApiView
 from .models import Dish, DishType, Restaurant, Menu, RestaurantPlanMenu, Client, Table, Order, OrderDish, OrderStages, \
     TableReservation, ClientBlackList
-from core.viewsets import CoreViewSet, CoreGetOnlyViewSet, CoreGetUpdateOnlyViewSet
+from core.viewsets import CoreViewSet, CoreGetOnlyViewSet
 from .serializers import DishSerializer, DishTypeSerializer, RestaurantSerializer, MenuSerializer, \
     RestaurantPlanMenuSerializer, ClientSerializer, TableSerializer, OrderSerializer, OrderDishSerializer, \
     OrderDishCookSerializer, TableReservationSerializer, ClientBlackListSerializer
@@ -23,14 +25,16 @@ from .services.reservation import validate_reservation_time
 from .services.views import BaseOrderDishEditViewSet
 
 
-class DishViewSet(LoginRequiredApiView, CoreViewSet):
+class DishViewSet(FoodApiView, CoreViewSet):
     queryset = Dish.objects.all()
     search_fields = ['name']
     serializer_class = DishSerializer
     parser_classes = (MultiPartParser, FormParser)
 
 
-class MenuPlanDishesViewSet(LoginRequiredApiView, CoreGetOnlyViewSet):
+class MenuPlanDishesViewSet(CoreGetOnlyViewSet):
+    permission_classes = (IsAuthenticated,  CookingPermission | ClientServicePermission)
+
     def get_queryset(self):
         result = None
 
@@ -50,57 +54,58 @@ class MenuPlanDishesViewSet(LoginRequiredApiView, CoreGetOnlyViewSet):
     serializer_class = DishSerializer
 
 
-class DishTypeViewSet(LoginRequiredApiView, CoreViewSet):
+class DishTypeViewSet(FoodApiView, CoreViewSet):
     queryset = DishType.objects.all()
     search_fields = ['name']
     serializer_class = DishTypeSerializer
 
 
-class RestaurantViewSet(LoginRequiredApiView, CoreViewSet):
+class RestaurantViewSet(FoodApiView, CoreViewSet):
     queryset = Restaurant.objects.all()
     search_fields = ['name']
     serializer_class = RestaurantSerializer
 
 
-class MenuViewSet(LoginRequiredApiView, CoreViewSet):
+class MenuViewSet(FoodApiView, CoreViewSet):
     queryset = Menu.objects.all()
     search_fields = ['name']
     serializer_class = MenuSerializer
 
 
-class ChangeMenuDishesApiView(LoginRequiredApiView, ManyToManyApiView):
+class ChangeMenuDishesApiView(FoodApiView, ManyToManyApiView):
     changeable_model = Menu
     serializer = DishSerializer
     many_to_many_field = 'dishes'
 
 
-class RestaurantPlanMenuViewSet(LoginRequiredApiView, CoreViewSet):
+class RestaurantPlanMenuViewSet(FoodApiView, CoreViewSet):
     queryset = RestaurantPlanMenu.objects.all()
     search_fields = ['restaurant__name', 'menu__name', 'date_start', 'date_start']
     filterset_fields = ['menu', 'restaurant']
     serializer_class = RestaurantPlanMenuSerializer
 
 
-class ClientViewSet(LoginRequiredApiView, CoreViewSet):
+class ClientViewSet(ClientServiceApiView, CoreViewSet):
     queryset = Client.objects.all()
     search_fields = ['name', 'surname', 'patronymic', 'phone_number']
     serializer_class = ClientSerializer
 
 
-class ClientBlackListViewSet(LoginRequiredApiView, CoreViewSet):
+class ClientBlackListViewSet(ClientServiceApiView, CoreViewSet):
     queryset = ClientBlackList.objects.all()
     search_fields = ['client__name', 'client__surname', 'client__patronymic', 'client__phone_number']
     serializer_class = ClientBlackListSerializer
 
 
-class TableViewSet(LoginRequiredApiView, CoreViewSet):
+class TableViewSet(FoodApiView, CoreViewSet):
     queryset = Table.objects.all()
     search_fields = ['restaurant__name', 'number', 'description']
     serializer_class = TableSerializer
 
 
-class RestaurantTablesViewSet(LoginRequiredApiView, CoreGetOnlyViewSet):
+class RestaurantTablesViewSet(CoreGetOnlyViewSet):
     ordering = ['-number']
+    permission_classes = (IsAuthenticated,  CookingPermission | ClientServicePermission)
 
     def get_queryset(self):
         return Table.objects.filter(restaurant=self.request.user.current_restaurant)
@@ -108,7 +113,7 @@ class RestaurantTablesViewSet(LoginRequiredApiView, CoreGetOnlyViewSet):
     serializer_class = TableSerializer
 
 
-class OrderViewSet(LoginRequiredApiView, CoreViewSet):
+class OrderViewSet(ClientServiceApiView, CoreViewSet):
     def get_queryset(self):
         return Order.objects.filter(restaurant=self.request.user.current_restaurant).order_by('-created_at')
 
@@ -126,7 +131,7 @@ class OrderViewSet(LoginRequiredApiView, CoreViewSet):
         super().perform_update(serializer)
 
 
-class MenuTemplateView(APIView):
+class MenuTemplateView(FoodApiView, APIView):
     def get(self, request, menu_id):
         menu = get_object_or_404(Menu, pk=menu_id)
         dish_types_order = validate_query_data(request.GET.get('order', ''))
@@ -147,7 +152,7 @@ class MenuTemplateView(APIView):
         return result
 
 
-class OrderPriceView(APIView):
+class OrderPriceView(ClientServiceApiView, APIView):
     def get(self, request, order_id):
         order = get_object_or_404(Order, pk=order_id)
         order_dishes = OrderDish.objects.filter(order=order).select_related('dish')
@@ -157,7 +162,7 @@ class OrderPriceView(APIView):
         return Response(data=dict(price=result_price), status=status.HTTP_200_OK)
 
 
-class ChangeOrderDishView(APIView):
+class ChangeOrderDishView(ClientServiceApiView, APIView):
     def get(self, request, order_id):
         order = get_object_or_404(Order, pk=order_id)
         order_dishes = OrderDish.objects.filter(order=order, dish__name__icontains=request.GET['search'])
@@ -205,17 +210,17 @@ class ChangeOrderDishView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class OrderDishCookViewSet(BaseOrderDishEditViewSet):
+class OrderDishCookViewSet(CookingApiView, BaseOrderDishEditViewSet):
     stage_to_set = OrderStages.READY
     stage_to_search = OrderStages.NOT_READY
 
 
-class OrderDishReadyViewSet(BaseOrderDishEditViewSet):
+class OrderDishReadyViewSet(ClientServiceApiView, BaseOrderDishEditViewSet):
     stage_to_set = OrderStages.FINISHED
     stage_to_search = OrderStages.READY
 
 
-class TableReservationViewSet(LoginRequiredApiView, CoreViewSet):
+class TableReservationViewSet(ClientServiceApiView, CoreViewSet):
     search_fields = ['client__name', 'client__surname', 'table__number', 'time_of_start', 'time_of_end']
     serializer_class = TableReservationSerializer
     ordering = ['-time_of_start']
@@ -235,7 +240,7 @@ class TableReservationViewSet(LoginRequiredApiView, CoreViewSet):
         super().perform_update(serializer)
 
 
-class TodayRestaurantInfo(APIView):
+class TodayRestaurantInfo(LoginRequiredApiView, APIView):
     def get(self, request):
         if not request.user.current_restaurant:
             raise ValidationError({'restaurant': 'your administrator must attach you to restaurant'})

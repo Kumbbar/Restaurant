@@ -1,5 +1,7 @@
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 
+from core.permissions import AdminPermission, FoodPermission, ClientServicePermission, CookingPermission
+
 
 class PublicApiView:
     authentication_classes = ()
@@ -7,7 +9,19 @@ class PublicApiView:
 
 
 class AdminApiView:
-    permission_classes = (IsAuthenticated, IsAdminUser)
+    permission_classes = (IsAuthenticated, IsAdminUser, AdminPermission)
+
+
+class FoodApiView:
+    permission_classes = (IsAuthenticated, FoodPermission)
+
+
+class ClientServiceApiView:
+    permission_classes = (IsAuthenticated, ClientServicePermission)
+
+
+class CookingApiView:
+    permission_classes = (IsAuthenticated, CookingPermission)
 
 
 class LoginRequiredApiView:
