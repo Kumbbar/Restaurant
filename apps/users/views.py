@@ -83,5 +83,5 @@ class IsAuthenticatedView(APIView):
 
     def get(self, request):
         response_data = {attr: getattr(request.user, attr) for attr in self.__class__.attrs}
-        response_data['permissions'] = request.user.get_user_permissions()
+        response_data['permissions'] = request.user.get_all_permissions()
         return Response(response_data, status=status.HTTP_200_OK)

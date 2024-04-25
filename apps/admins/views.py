@@ -1,10 +1,12 @@
 from django.contrib.auth.models import Group
 
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 
+from core.permissions import AdminPermission, FoodPermission
 from .serializers import (
     UsersRUDListSerializer,
     ResetPasswordSerializer,
@@ -26,6 +28,7 @@ from core.viewsets import CoreViewSet
 
 
 class UserViewSet(AdminApiView, CoreViewSet):
+    permission_classes = (IsAuthenticated, AdminPermission | FoodPermission)
     queryset = get_all_users()
 
     def get_serializer_class(self):
