@@ -33,7 +33,7 @@ class DishViewSet(FoodApiView, CoreViewSet):
 
 
 class MenuPlanDishesViewSet(CoreGetOnlyViewSet):
-    permission_classes = (IsAuthenticated,  CookingPermission | ClientServicePermission)
+    permission_classes = (IsAuthenticated, CookingPermission | ClientServicePermission)
 
     def get_queryset(self):
         result = None
@@ -49,7 +49,7 @@ class MenuPlanDishesViewSet(CoreGetOnlyViewSet):
             else:
                 result = result | planned_obj.menu.dishes.all()
 
-        return result.distinct()
+        return result.distinct() if result else RestaurantPlanMenu.objects.none()
 
     serializer_class = DishSerializer
 
@@ -105,7 +105,7 @@ class TableViewSet(FoodApiView, CoreViewSet):
 
 class RestaurantTablesViewSet(CoreGetOnlyViewSet):
     ordering = ['-number']
-    permission_classes = (IsAuthenticated,  CookingPermission | ClientServicePermission)
+    permission_classes = (IsAuthenticated, CookingPermission | ClientServicePermission)
 
     def get_queryset(self):
         return Table.objects.filter(restaurant=self.request.user.current_restaurant)
@@ -243,7 +243,9 @@ class TableReservationViewSet(ClientServiceApiView, CoreViewSet):
 class TodayRestaurantInfo(LoginRequiredApiView, APIView):
     def get(self, request):
         if not request.user.current_restaurant:
-            raise ValidationError({'restaurant': 'your administrator must attach you to restaurant'})
+            raise ValidationError(
+                {'restaurant': 'your administrator must attach you to restaurant for to get today data'}
+            )
 
         tables_reserved = TableReservation.objects.filter(
             restaurant=request.user.current_restaurant, time_of_start__date=datetime.date.today(),
@@ -251,11 +253,11 @@ class TodayRestaurantInfo(LoginRequiredApiView, APIView):
         ).count()
 
         not_ready_orders = Order.objects.filter(
-            restaurant=request.user.current_restaurant, created_at__date=datetime.date.today(),
-            stage=OrderStages.NOT_READY
+            Q(stage=OrderStages.NOT_READY) | Q(stage=OrderStages.READY),
+            restaurant=request.user.current_restaurant, created_at__date=datetime.date.today()
         ).count()
 
         return Response(
-            data=dict(tables_reserved=tables_reserved, not_ready_orders=not_ready_orders,),
+            data=dict(tables_reserved=tables_reserved, not_ready_orders=not_ready_orders, ),
             status=status.HTTP_200_OK
         )
