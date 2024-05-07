@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.permissions import ClientServicePermission, CookingPermission
+from core.permissions import ClientServicePermission, CookingPermission, FoodPermission, AdminPermission
 from core.validation.query import validate_query_data
 from core.views.many_to_many import ManyToManyApiView
 from core.views.permissions import LoginRequiredApiView, FoodApiView, ClientServiceApiView, CookingApiView
@@ -61,6 +61,7 @@ class DishTypeViewSet(FoodApiView, CoreViewSet):
 
 
 class RestaurantViewSet(FoodApiView, CoreViewSet):
+    permission_classes = (IsAuthenticated, FoodPermission | AdminPermission)
     queryset = Restaurant.objects.all()
     search_fields = ['name']
     serializer_class = RestaurantSerializer
@@ -128,6 +129,8 @@ class OrderViewSet(ClientServiceApiView, CoreViewSet):
 
     def perform_update(self, serializer):
         check_user_is_blocked(self.request)
+        if serializer.instance.stage != serializer.validated_data['stage']:
+            OrderDish.objects.filter(order=serializer.instance).update(stage=serializer.validated_data['stage'])
         super().perform_update(serializer)
 
 

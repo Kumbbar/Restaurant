@@ -36,6 +36,12 @@ class UserViewSet(AdminApiView, CoreViewSet):
             return CreateUserSerializer
         else:
             return UsersRUDListSerializer
+    
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        if 'password' in serializer.validated_data:
+            serializer.instance.set_password(serializer.validated_data['password'])
+            serializer.instance.save()
 
     search_fields = ['username', 'first_name', 'last_name']
     ordering = ['-id']
@@ -60,7 +66,7 @@ class GroupViewSet(AdminApiView, CoreViewSet):
     ordering = ['-id']
 
 
-class ContentTypeViewSet(AdminApiView, CoreViewSet):
+class ContentTypeViewSet(CoreViewSet, AdminApiView):
     queryset = get_all_content_types()
     serializer_class = ContentTypeSerializer
 

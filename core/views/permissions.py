@@ -9,7 +9,7 @@ class PublicApiView:
 
 
 class AdminApiView:
-    permission_classes = (IsAuthenticated, IsAdminUser, AdminPermission)
+    permission_classes = (IsAuthenticated, IsAdminUser | AdminPermission)
 
 
 class FoodApiView:

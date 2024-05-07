@@ -112,7 +112,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'stage',
             'created_at'
         )
-        read_only_fields = ['created_at', 'stage']
+        read_only_fields = ['created_at']
 
 
 class TableReservationSerializer(serializers.ModelSerializer):
