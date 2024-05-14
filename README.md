@@ -1,4 +1,4 @@
-<img alt="Logotype" height="256" src="./docs/icon.png" width="256" align="right"/>
+<img alt="Logotype" height="256" src="./docs/food.svg" width="256" align="right"/>
 
 # Restaurant business system
 Система для автоматизации основных бизнес процессов ресторанов
