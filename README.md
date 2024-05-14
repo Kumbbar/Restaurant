@@ -1,9 +1,10 @@
 <img alt="Logotype" height="256" src="./docs/food.svg" width="256" align="right"/>
 
 # Restaurant business system
-Система для автоматизации основных бизнес процессов ресторанов
+REST API Система для автоматизации основных бизнес процессов ресторанов
 <!--Блок информации о репозитории в бейджах-->
 ![Static Badge](https://img.shields.io/badge/Author-Kumbbar-green)
+![Static Badge](https://img.shields.io/badge/UI-link-red?link=https%3A%2F%2Fgithub.com%2FKumbbar%2FRestaurantUI)
 
 ## Установка
 
