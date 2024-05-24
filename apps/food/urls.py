@@ -24,6 +24,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('render_menu/<int:menu_id>/', views.MenuTemplateView.as_view()),
     path('order_price/<int:order_id>/', views.OrderPriceView.as_view()),
+    path('order_price_template/<int:order_id>/', views.OrderPriceTemplateView.as_view()),
     path(
         'menu_dishes/<int:main_id>/',
         views.ChangeMenuDishesApiView.as_view(), name='change_menu_dishes'
@@ -34,5 +35,6 @@ urlpatterns = [
         name='change_order_dishes'
     ),
     path('today_restaurant_info/', views.TodayRestaurantInfo.as_view()),
+    path('restaurant_report/', views.RestaurantReportView.as_view()),
 
 ]

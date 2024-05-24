@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Order - {{ order.id }}</title>
+    <link rel="stylesheet" href="{% static 'food/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'food/css/fontawesome.css' %}">
+    <link rel="stylesheet" href="{% static 'food/css/main.css' %}">
+    <style>
+      hr {
+        display: block;
+        margin-top: 0.5em;
+        margin-bottom: 0.5em;
+        margin-left: auto;
+        margin-right: auto;
+        border-style: inset;
+        border-width: 1px;
+      }
+    </style>
+  </head>
+  <body>
+<div class="main-price">
+  <h2 style="margin-top: 0px;">Order - {{ order.id }}</h2>
+  <h4 style="margin-top: 0px;">Client - {{ order.client.name }} {{ order.client.surname }}</h4>
+  <h4 style="margin-top: 0px;">Table - {{ order.table.number }}</h4>
+  <hr>
+  {% for dish in prices.order_dishes_info %}
+    <p style="text-decoration: none"> <div style="float: left; white-space: break-spaces; width: 400px">{{ dish.name}} </div> <div style="float : right;">{{ dish.count }} * {{ dish.price}} = {{ dish.total_price }}</div> </p>
+  <br>
+  {% endfor %}
+  <hr>
+    <p style="text-decoration: none"> <div style="float: left; white-space: break-spaces; width: 400px">{{ order.created_at|format_date }} </div> <div style="float : right; font-size: 18pt">{{ prices.result_price }}</div> </p>
+  </div>
+  </body>
+</html>

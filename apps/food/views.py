@@ -2,6 +2,7 @@ import datetime
 
 from django.db import models
 from django.db.models import Q, Sum
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
@@ -9,6 +10,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from openpyxl import Workbook
 
 from core.permissions import ClientServicePermission, CookingPermission, FoodPermission, AdminPermission
 from core.validation.query import validate_query_data
@@ -21,8 +23,12 @@ from .serializers import DishSerializer, DishTypeSerializer, RestaurantSerialize
     RestaurantPlanMenuSerializer, ClientSerializer, TableSerializer, OrderSerializer, OrderDishSerializer, \
     OrderDishCookSerializer, TableReservationSerializer, ClientBlackListSerializer
 from .services.black_list import check_user_is_blocked
+from .services.report import get_restaurant_excel_report
 from .services.reservation import validate_reservation_time
 from .services.views import BaseOrderDishEditViewSet
+
+# Register filters
+from .filters import *
 
 
 class DishViewSet(FoodApiView, CoreViewSet):
@@ -156,13 +162,44 @@ class MenuTemplateView(FoodApiView, APIView):
 
 
 class OrderPriceView(ClientServiceApiView, APIView):
-    def get(self, request, order_id):
+    def get_prices(self, order_id):
+        result = {}
         order = get_object_or_404(Order, pk=order_id)
-        order_dishes = OrderDish.objects.filter(order=order).select_related('dish')
+        order_dishes = OrderDish.objects.filter(order=order).order_by('id').select_related('dish')
+
         result_price = 0
+        order_dishes_info = []
         for order_dish in order_dishes:
             result_price += order_dish.dish.price * order_dish.count
-        return Response(data=dict(price=result_price), status=status.HTTP_200_OK)
+            order_dish_info = {}
+            order_dish_info['name'] = order_dish.dish.name
+            order_dish_info['price'] = order_dish.dish.price
+            order_dish_info['count'] = order_dish.count
+            order_dish_info['total_price'] = order_dish.count * order_dish.dish.price
+            order_dishes_info.append(order_dish_info)
+
+        result['result_price'] = result_price
+        result['order_dishes_info'] = order_dishes_info
+        return result
+
+    def get(self, request, order_id):
+        prices = self.get_prices(order_id)
+        return Response(data=dict(price=prices['result_price']), status=status.HTTP_200_OK)
+
+
+class OrderPriceTemplateView(OrderPriceView):
+    def get(self, request, order_id):
+        prices = self.get_prices(order_id)
+        order = get_object_or_404(Order, pk=order_id)
+        return render(
+            request,
+            'food/order_price.html',
+            {'prices': prices, 'order': order})
+
+
+class RestaurantReportView(FoodApiView, APIView):
+    def get(self, request):
+        return get_restaurant_excel_report(request)
 
 
 class ChangeOrderDishView(ClientServiceApiView, APIView):
