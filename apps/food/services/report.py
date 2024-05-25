@@ -71,7 +71,7 @@ def get_restaurant_excel_report(request):
                         from food_dish
                         join food_orderdish on food_dish.id = food_orderdish.dish_id
                         join food_order on food_orderdish.order_id = food_order.id
-                        join main.food_client fc on food_order.client_id = fc.id
+                        left join main.food_client fc on food_order.client_id = fc.id
                         where food_order.restaurant_id = %(restaurant_id)s and date(food_order.created_at) BETWEEN date(%(time_of_start)s) and date(%(time_of_end)s)
                         group by fc.name, fc.surname, fc.patronymic, food_order.created_at
                         order by 5, 6 desc
